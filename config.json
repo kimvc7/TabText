@@ -1,0 +1,10 @@
+{
+  "_comment": "===== CONSTAT FILE PATHS =====",
+  "DIRECTORY_NAME": "/home/gridsan/kimvc/HAIM_H2O_shared/",
+  "BIOBERT_PATH":  "/home/gridsan/kimvc/haim_shared/pretrained_bert_tf/biobert_pretrain_output_all_notes_150000/",
+
+  "_comment": "===== CONSTAT COLUMN KEYS =====",
+  "TEXT_COL": "text",
+  "EMB_COL": "embeddings",
+  "WEIGHT_COL": "weight"
+}

@@ -1,0 +1,5 @@
+﻿column_name,attribute,verb,neg_verb,data_type
+AGE_AT_ADMISSION,age at admission,is,,numerical
+PRIMARY_PAYOR_NAME,payor name,is,,categorical
+PRIMARY_PLAN_NAME,payor plan,is,,categorical
+DISCHARGE_DISPO,discharge disposition,is,,categorical

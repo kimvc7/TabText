@@ -1,0 +1,6 @@
+﻿column_name,attribute,verb,neg_verb,data_type
+LOCATION_NAME,hospital,is,,categorical
+SERVICE,service,is,,categorical
+DEPARTMENT_NAME,department,is,,categorical
+BASE_PATIENT_CLASS,class,is,,categorical
+ACCOMMODATION_ORDER,accomodation order,is,,categorical
