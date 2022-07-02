@@ -6,5 +6,7 @@
   "_comment": "===== CONSTAT COLUMN KEYS =====",
   "TEXT_COL": "text",
   "EMB_COL": "embeddings",
+  "ENC_COL": "encoded_vector",
+  "IMP_COL": "imputed_vector",
   "WEIGHT_COL": "weight"
 }

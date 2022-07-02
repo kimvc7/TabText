@@ -1,10 +1,11 @@
 class Column(object):
-    def __init__(self, name, attribute, col_type, verb):
+    def __init__(self, name, attribute=None, col_type=None, verb=None, encode_fn=None):
         self.name = name
         self.attribute = attribute
         self.type = col_type
         self.verb = verb
-        
+        self.encode_fn = encode_fn
+
     def is_binary(self):
         return self.type == "binary"
     
@@ -22,9 +23,9 @@ class Column(object):
         
         
 class Binary_Column(Column):
-    def __init__(self, name, attribute, verb, neg_verb):
+    def __init__(self, name, attribute, verb, neg_verb, encode_fn=None):
         self.neg_verb = neg_verb
-        super().__init__(name, attribute, "binary", verb)
+        super().__init__(name, attribute, "binary", verb, encode_fn)
         
 
     def create_descriptive_sentence(self, value, prefix, missing_word, replace_numbers):
@@ -49,8 +50,8 @@ class Binary_Column(Column):
         return sentence
         
 class Categorical_Column(Column):
-    def __init__(self, name, attribute, verb):
-        super().__init__(name, attribute, "categorical", verb)
+    def __init__(self, name, attribute, verb, encode_fn=None):
+        super().__init__(name, attribute, "categorical", verb, encode_fn)
 
     def create_descriptive_sentence(self, value, prefix, missing_word, replace_numbers):
         if len(prefix) != 0:
@@ -74,10 +75,10 @@ class Categorical_Column(Column):
         return sentence
     
 class Numerical_Column(Column):
-    def __init__(self, name, attribute, verb, avg, sd):
+    def __init__(self, name, attribute, verb, avg, sd, encode_fn = None):
         self.avg = avg
         self.sd = sd
-        super().__init__(name, attribute, "numerical", verb)
+        super().__init__(name, attribute, "numerical", verb, encode_fn)
         
         
     def create_descriptive_sentence(self, value, prefix, missing_word, replace_numbers):

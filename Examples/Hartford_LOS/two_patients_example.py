@@ -4,7 +4,10 @@ import pandas as pd
 import sys
 
 sys.path.insert(0, '../../src')
+sys.path.insert(1, '../../src/utils')
+
 from get_patients import *
+from data_utils import *
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -32,6 +35,9 @@ def create_time_weights(timestamps):
     #TO-DO
     n = len(timestamps)
     return [1/n for i in range(n)]
+
+
+
 
 event_df = pd.read_csv("../../../allData_downloaded/adtEventData.csv", "|")
 clin_df = pd.read_csv("../../../allData_downloaded/clindocData.csv", "|")
@@ -72,26 +78,22 @@ patients = get_patients(tables_info, 'PAT_ENC_CSN_ID', 'time')
 print("=================================")
 print("FIRST PATIENT TIMED DATA:")
 print("=================================")
-print(patients[0].create_timed_data("the patient ", "missing", replace_numbers=False, descriptive=True, merge_tables_text=True))
-
+patients[0].create_timed_data("the patient ", "missing", replace_numbers=False, descriptive=True)
+t = patients[0].timed_data
+print(t)
 print("=================================")
 print("FIRST PATIENT TIME_BOUNDED DATA:")
 print("=================================")
-t = patients[0].create_timed_data("the patient ", "missing", replace_numbers=False, descriptive=True, merge_tables_text=True) 
-print(patients[0].get_timebounded_embeddings(create_time_weights, start_hr = t.iloc[2]["time"], end_hr = t.iloc[5]["time"], merge_tables_text=True))
+print(patients[0].get_timebounded_embeddings(start_hr = t.iloc[2]["time"], end_hr = t.iloc[5]["time"]))
 
-
+patient = patients[0]
 print("=================================")
-print("SECOND PATIENT TIMED DATA")
+print("PATIENT: ", patient.id)
 print("=================================")
-print(patients[1].create_timed_data("the patient ", "missing", replace_numbers=False, descriptive=True, merge_tables_text=True))
-for patient in patients:
-    print("=================================")
-    print("PATIENT: ", patient.id)
-    print("=================================")
-    timed_data = patient.create_timed_data("the patient ", "missing", replace_numbers=False, descriptive=True, merge_tables_text=True)
-    print("first row is: ")
-    print("time: ", str(timed_data.iloc[0]["time"]))
-    print("text: ", timed_data.iloc[0]["text"])
-    #print("embeddings", str(timed_data.iloc[0]["embeddings"]))
+print("first row is: ")
+print("time: ", str(t.iloc[0]["time"]))
+print("text: ", t.iloc[0]["text"])
+print("joint embeddings shape: ", len(t.iloc[0]["embeddings_joint_tables"]))
+print("separate embeddings shape: ", len(t.iloc[0]["embeddings_separate_tables"]))
+#print("embeddings", str(timed_data.iloc[0]["embeddings"]))
 
