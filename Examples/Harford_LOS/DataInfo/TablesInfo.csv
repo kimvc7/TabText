@@ -1,0 +1,4 @@
+﻿path,metadata,name,time_col,columns_file
+./Data/encounterData.csv,The following is the encounter information: ,Encounter,,encounterDataColumnsInfo.csv
+./Data/adtEventData.csv,"The following is the information for admission, discharge and transfer events: ",ADT_Events,EFFECTIVE_DTTM,adtEventDataColumnsInfo.csv
+./Data/clindocData.csv,The following is the clinical information: ,Clinical,CALENDAR_DT,clinDocDataColumnsInfo.csv

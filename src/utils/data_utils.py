@@ -3,6 +3,10 @@ import pandas as pd
 import json
 from sklearn.preprocessing import LabelEncoder
 
+from julia import Julia
+Julia(sysimage='/home/gridsan/groups/IAI/images/2.0.0/julia-1.5.2/sys.so', compiled_modules = False)
+from interpretableai import iai
+
 
 # Load config file with static parameters
 with open('../../config.json') as config_file:
@@ -21,15 +25,22 @@ def encode_numerical(column):
     return new_col
 
 
-def encode_categorical_train(column):
+def get_label_encoder(column):
     le = LabelEncoder()
-    le.fit_transform(column[column.notnull()])
+    le.fit(column[column.notnull()])
     return le
 
-def encode_categorical_unseen(column, le):
-    dic = dict(zip(le.classes_, le.transform(le.classes_)))
+def encode_categorical(column, encoder):
+    dic = dict(zip(encoder.classes_, encoder.transform(encoder.classes_)))
     return column.map(dic).fillna(0).astype(int)
-   
+
+def get_iai_imputer(df):
+    lnr = iai.ImputationLearner(method='opt_knn', random_seed=1,cluster=True)
+    lnr.fit(df)
+    return lnr
+
+def iai_impute_data(df, imputer):
+    return imputer.transform(df)
 
 def impute_data(df, imputer_fn):
     imp_vectors = []
@@ -39,3 +50,17 @@ def impute_data(df, imputer_fn):
         imp_vectors.append(imp_vector)
 
     return imp_vectors
+
+def date_diff_hrs(t1, t0):
+    delta_t = round((t1-t0).total_seconds()/3600) # Result in hrs
+    return delta_t
+
+def hourly_weight_fn(time_array):
+    most_recent = max(time_array)
+    delta_hrs = np.array([date_diff_hrs(most_recent, t) for t in time_array])
+    flipped_delta = delta_hrs.max() - delta_hrs
+    weights = flipped_delta/flipped_delta.mean()
+    return weights
+
+
+

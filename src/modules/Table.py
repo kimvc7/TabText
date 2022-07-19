@@ -17,84 +17,78 @@ from biobert_utils import *
 
 #One table per patient per tabular data structure
 class Table(object):
-    def __init__(self, name, df, columns, metadata, time_col):
+    def __init__(self, name="", df=pd.DataFrame(), columns=None, metadata=None, time_col=None, imputer=None):
         self.name = name
         self.columns = columns
         self.metadata = metadata
         self.time_col = time_col
-        self.df = df[self.get_column_names()]
-
+        self.df = df
+        self.imputer = imputer
+        self.is_empty = pd.isna(df).all().all()
+        
     def is_temporal(self):
         return self.time_col is not None
     
     def is_static(self):
-        return self.time_col is None
+        return self.time_col is None      
+    
+        
+    def create_text(self, prefix, missing_word, replace_numbers, descriptive, omit_empty = True):
+        self.text = pd.DataFrame()
+        if self.is_temporal():
+            self.text[self.time_col] = self.df[self.time_col]
+        text = []
+        
+        if self.is_empty & omit_empty:
+            text.append("")
+            
+        else:
+            for t_i in range(self.df.shape[0]):
+                text_i = self.metadata
 
-    def get_column_names(self):
-        col_names = []
-        for column in self.columns:
-            col_names.append(column.name)
-        if self.time_col is not None:
-            col_names.append(self.time_col)
-        return col_names
+                for column in self.columns:
+                    value = self.df.iloc[t_i][column.name]
+                    col_text = column.create_sentence(value, prefix, missing_word, replace_numbers, descriptive)
+                    if len(col_text) >0:
+                        col_text += ", "
+                    text_i += col_text
+                text_i = text_i[:-2]+ ". "    
+                text.append(text_i)
 
-
-    def create_encoded_imputed_vectors(self, impute_fn = None):
+        self.text[TEXT_COL] =  text
+        
+    def create_encoded_imputed_vectors(self):
         encoded_df =  pd.DataFrame()
-  
+        
         for column in self.columns:
             col_values = self.df[column.name]
             col_encoder = column.encode_fn
             labels = col_encoder(col_values[col_values.notnull()])
             encoded_df[column.name] = col_values
             encoded_df[column.name] = pd.Series(labels, index=col_values[col_values.notnull()].index)
-
-        self.df[ENC_COL] = [np.array(encoded_df.iloc[i]) for i in range(self.df.shape[0])]
-        if impute_fn is not None:
-            imputed_df = impute_fn(encoded_df)
-            self.df[IMP_COL] = [np.array(imputed_df[i]) for i in range(self.df.shape[0])]
-                
-
         
-    def create_text(self, prefix, missing_word, replace_numbers, descriptive):
-        text = []
-        for t_i in range(self.df.shape[0]):
-            text_i = self.metadata
-            
-            for column in self.columns:
-                value = self.df.iloc[t_i][column.name]
-                col_text = column.create_sentence(value, prefix, missing_word, replace_numbers, descriptive)
-                if len(col_text) >0:
-                    col_text += ", "
-                text_i += col_text
-            text_i = text_i[:-2]+ ". "    
-            text.append(text_i)
-    
-        self.df[TEXT_COL] = text
-
+        if self.imputer is not None:
+            self.imputations = self.imputer(encoded_df)
+            if self.is_temporal():
+                self.imputations[self.time_col] = self.df[self.time_col]
+       
+        self.encodings = encoded_df
+        if self.is_temporal():
+            self.encodings[self.time_col] = self.df[self.time_col]
+        
     
     def create_embeddings(self):
         embeddings = []
 
-        for i in range(self.df.shape[0]):
-            text = self.df.iloc[i][TEXT_COL]
+        for i in range(self.text.shape[0]):
+            text = self.text.iloc[i][TEXT_COL]
             full_embedding = get_biobert_embeddings(text)[0]
             embeddings.append(full_embedding.reshape(-1))
-
-        self.df[EMB_COL] = embeddings
         
-    def get_timebounded_df(self, start_hr, end_hr):
-        
-        if self.time_col is None:
-            return self.df
-        
-        else:
-            timebounded_df = self.df.copy()
+        emb_df =  pd.DataFrame(np.array(embeddings))
+        emb_df = emb_df.set_index(self.text.index)
+        merged_df = pd.concat([self.text, emb_df], axis=1)
+        merged_df = merged_df.rename({i: self.name + "_" + str(i) for i in range(len(embeddings[0]))}, axis='columns')
 
-            if start_hr is not None:
-                timebounded_df = timebounded_df[timebounded_df[time_col]>= start_hr]
-            if end_hr is not None:
-                timebounded_df = timebounded_df[timebounded_df[time_col]<= end_hr]
-
-            return timebound_df
-    
+        self.embeddings = merged_df.drop([TEXT_COL], axis = 1)
+        

@@ -11,6 +11,7 @@ with open('../../config.json') as config_file:
 
 biobert_path = config["BIOBERT_PATH"]
 TEXT_COL = config["TEXT_COL"]
+EMB_COL = config["EMB_COL"]
 
 biobert_tokenizer = AutoTokenizer.from_pretrained(biobert_path)
 biobert_model = AutoModel.from_pretrained(biobert_path)
@@ -42,5 +43,9 @@ def create_embeddings(df):
         text = df.iloc[i][TEXT_COL]
         full_embedding = get_biobert_embeddings(text)[0]
         embeddings.append(full_embedding.reshape(-1))
+        
+    emb_df =  pd.DataFrame(np.array(embeddings))
+    emb_df = emb_df.set_index(df.index)
+    merged_df = pd.concat([df, emb_df], axis=1)
 
-    return embeddings
+    return merged_df.drop(columns= TEXT_COL, axis=1)

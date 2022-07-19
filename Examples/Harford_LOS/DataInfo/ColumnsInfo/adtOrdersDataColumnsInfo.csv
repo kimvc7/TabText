@@ -1,0 +1,23 @@
+﻿column_name,attribute,verb,neg_verb,data_type
+LAB,number of lab orders,is,,numerical
+LAB_PENDING,number of pending labs,is,,numerical
+IMAGING,number of imaging ,is,,numerical
+NOURISHMENT,number of nutrition orders,is,,numerical
+CONSULT,number of consults performed,is,,numerical
+MEDICATION,number of active medication orders,is,,numerical
+Dialysis,dialysis,requires,does not require,binary
+general_all,number of nursing care orders,is,,numerical
+ALBUMIN_VALUE,albumin value,is,,numerical
+BILIRUBIN_VALUE,bilirubin value,is,,numerical
+HEMATOCRIT_VALUE,hematocrit value,is,,numerical
+PLATELET_VALUE,platelet value ,is,,numerical
+RDW_VALUE,RDW value,is,,numerical
+UREA_NITROGEN,urea nitrogen value,is,,numerical
+INR_VALUE,INR value,is,,numerical
+WHITE_BLOOD_CELL,white blood cell count,is,,numerical
+NUTRITION_DIET,diet,is,,categorical
+MAR_COUNT,number of medications administered,is,,numerical
+discharge_ord,discharge order,has,does not have,binary
+activity_ord_CNT,number of acivity orders ,is,,numerical
+orders_types_day,number of types of orders entered,is,,numerical
+orders_count,number of orders,is,,numerical

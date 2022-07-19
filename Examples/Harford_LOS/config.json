@@ -1,0 +1,19 @@
+{"comment_1": "===== CONSTAT FILE PATHS =====", 
+ "TABLES_PATH": "/home/gridsan/kimvc/HAIM_H2O_shared/TabText/Examples/Harford_LOS_Example/DataInfo/TablesInfo.csv",
+ "COLUMNS_PATH": "/home/gridsan/kimvc/HAIM_H2O_shared/TabText/Examples/Harford_LOS_Example/DataInfo/ColumnsInfo/",
+ "FILTERING_DF": "/home/gridsan/kimvc/HAIM_H2O_shared/TabText/Examples/Harford_LOS_Example/Data/adtEventData.csv", 
+ "DISCHARGE_INFO_PATH": "/home/gridsan/kimvc/HAIM_H2O_shared/TabText/Examples/Harford_LOS_Example/Data/DischargeInfo.csv",
+ 
+ "comment_2": "===== CONSTANT FILTERS =====", 
+ "FILTER_MAP": {"BASE_PATIENT_CLASS": ["Direct", "Observation", "Inpatient"], 
+                "LOCATION_NAME": ["HHC HH Hartford Hospital"]}, 
+ 
+ "comment_3": "===== CONSTANT COLUMN KEYS =====", 
+ "ID_COL": "PAT_ENC_CSN_ID", 
+ "TIME_COL": "CurrentDate", 
+ 
+ "comment_4": "===== CONSTANT DATES =====", 
+ "TRAINING_START": {"YEAR": 2018, "MONTH": 1, "DAY": 1}, 
+ "TRAINING_END": {"YEAR": 2018, "MONTH": 1, "DAY": 3},
+ "TESTING_START": {"YEAR": 2018, "MONTH": 1, "DAY": 4}, 
+ "TESTING_END": {"YEAR": 2018, "MONTH": 1, "DAY": 6}}

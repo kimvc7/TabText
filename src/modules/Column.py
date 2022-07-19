@@ -86,6 +86,7 @@ class Numerical_Column(Column):
             prefix = prefix[:-1] + "'s "
         sentence = ""
         if str(value).lower() not in ["nan", "", "none", "missing"]:
+            value = float(value)
             col_value = self.encode_number(value, replace_numbers)
             sentence = prefix + self.attribute + " " + self.verb + " " + str(col_value) 
         elif  missing_word != "":
@@ -98,6 +99,7 @@ class Numerical_Column(Column):
             prefix = prefix[:-1] + "'s "
         sentence = ""
         if  str(value).lower() not in ["nan", "", "none", "missing"]:
+            value = float(value)
             col_value = self.encode_number(value, replace_numbers)
             sentence = self.attribute + ": " + str(col_value)
         elif missing_word != "":

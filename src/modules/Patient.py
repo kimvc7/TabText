@@ -34,52 +34,37 @@ class Patient(object):
             table_names.append(table.name)
         return table_names
 
-    def create_timed_data(self, prefix, missing_word, replace_numbers, descriptive, separate_tables=True, join_tables=True, include_vec=True, include_emb=True, imputer_fn=np.nan_to_num, imputer_map = None):
+    def create_timed_data(self, prefix, missing, replace_numbers, descriptive, global_imp, sep_tables=True, join_tables=True):
         
         for table in self.tables:
-            if include_emb:
-                table.create_text(prefix, missing_word, replace_numbers, descriptive)
-            if include_vec and (imputer_fn is not None):
-                if separate_tables:
-                     table.create_encoded_imputed_vectors(imputer_fn)
-                     #table.create_encoded_imputed_vectors(imputer_map[table.name])
-                else:
-                    table.create_encoded_imputed_vectors()
+            table.create_text(prefix, missing, replace_numbers, descriptive)
+            table.create_encoded_imputed_vectors()
 
 
-        text_data = reduce(lambda t1, t2: merge_text(t1, t2, self.time_col), self.tables).df
-        self.timed_data = text_data
-
-        enc_data = reduce(lambda t1, t2: merge_arrays(t1, t2, self.time_col, ENC_COL), self.tables).df
-        self.timed_data[ENC_COL] = enc_data[ENC_COL]
+        text_table = reduce(lambda t1, t2: merge_text(t1, t2, self.time_col), self.tables)
+        self.text = text_table.text
+        enc_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "encodings"), self.tables)
+        self.encodings = enc_table.encodings
         
-        if include_emb:
-            if join_tables:
-                self.timed_data[EMB_COL + "_joint_tables"] = create_embeddings(self.timed_data)
-            if separate_tables:
-                for table in self.tables:
-                    table.create_embeddings()
 
-                emb_data = reduce(lambda t1, t2: merge_arrays(t1, t2, self.time_col, EMB_COL), self.tables).df
-                self.timed_data[EMB_COL + "_separate_tables"] = emb_data[EMB_COL]
-        
-        if include_vec:
-            if join_tables:
-                self.timed_data[IMP_COL + "_joint_tables"] = impute_data(self.timed_data, imputer_fn)
-            if separate_tables:
-                for table in self.tables:
-                    table.create_embeddings()
+        if join_tables:
+            
+            self.joint_embeddings = create_embeddings(self.text)
+            
+            joint_imputations = global_imp(self.encodings.drop([self.time_col], axis = 1))
+            joint_imputations[self.time_col] = self.encodings[self.time_col]
+            self.joint_imputations = joint_imputations
+                
+        if sep_tables:
+            
+            for table in self.tables:
+                table.create_embeddings()
+                    
+            emb_table= reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "embeddings"), self.tables)
+            self.sep_embeddings = emb_table.embeddings
+  
+            imp_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "imputations"), self.tables)
+            self.sep_imputations = imp_table.imputations
 
-                imp_data = reduce(lambda t1, t2: merge_arrays(t1, t2, self.time_col, IMP_COL), self.tables).df
-                self.timed_data[IMP_COL + "_separate_tables"] = imp_data[IMP_COL]
 
-    
-    def get_timebounded_embeddings(self, start_hr = None, end_hr = None):
-        timebounded_df = self.timed_data.copy()
 
-        if start_hr is not None:
-            timebounded_df = self.timed_data[self.timed_data[self.time_col]>= start_hr]
-        if end_hr is not None:
-            timebounded_df = self.timed_data[self.timed_data[self.time_col]<= end_hr]
-
-        return timebounded_df
