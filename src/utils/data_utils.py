@@ -59,7 +59,11 @@ def hourly_weight_fn(time_array):
     most_recent = max(time_array)
     delta_hrs = np.array([date_diff_hrs(most_recent, t) for t in time_array])
     flipped_delta = delta_hrs.max() - delta_hrs
-    weights = flipped_delta/flipped_delta.mean()
+    if flipped_delta.sum() == 0:
+        assert(len(flipped_delta)== 1)
+        weights = [1]
+    else:
+        weights = flipped_delta/flipped_delta.sum()
     return weights
 
 
