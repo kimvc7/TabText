@@ -1,0 +1,3 @@
+column_name,attribute,verb,neg_verb,data_type
+FLO_MEAS_NAME_vitals, Name of MEAS,is,,categorical
+MEAS_VALUE_vitals,Value of MEAS,is,,categorical

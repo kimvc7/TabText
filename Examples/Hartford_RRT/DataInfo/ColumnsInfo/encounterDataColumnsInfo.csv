@@ -1,0 +1,11 @@
+column_name,attribute,verb,neg_verb,data_type
+BP_SYSTOLIC,Systolic blood pressure,is,,numerical
+BP_DIASTOLIC,Diastolic blood pressure,is,,numerical
+BSA,Body surface area,is,,numerical
+BMI,Body mass index,is,,numerical
+TEMPERATURE,temperature,is,,numerical
+PULSE,pulse,is,,numerical
+WEIGHT_enc,weight,is,,numerical
+HEIGHT_enc,height,is,,numerical
+RESPIRATIONS,respirations,is,,numerical
+ENCOUNTER_TYPE,type of encounter,is,,categorical

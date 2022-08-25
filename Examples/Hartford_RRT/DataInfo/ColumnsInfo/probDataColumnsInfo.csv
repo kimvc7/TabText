@@ -1,0 +1,3 @@
+column_name,attribute,verb,neg_verb,data_type
+PROBSTATUS,Problem status,is,,categorical
+PRINCIPAL_PROB_YN,Principle problem,is,,binary
