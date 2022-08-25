@@ -1,16 +1,13 @@
 from Column import *
 import json
 import sys
+import os
 
 # Load config file with static parameters
-with open('../../config.json') as config_file:
-	config = json.load(config_file)
+with open(os.path.dirname(__file__) + '/../../config.json') as config_file:
+        config = json.load(config_file)
 
-TEXT_COL = config["TEXT_COL"]
-EMB_COL = config["EMB_COL"]
 DIR_NAME = config["DIRECTORY_NAME"]
-ENC_COL = config["ENC_COL"]
-IMP_COL = config["IMP_COL"]
 
 sys.path.insert(0, DIR_NAME + 'TabText/src/utils')
 from biobert_utils import *
@@ -44,7 +41,9 @@ class Table(object):
             
         else:
             for t_i in range(self.df.shape[0]):
-                text_i = self.metadata
+                text_i = ""
+                if len(str(self.metadata)) >1:
+                    text_i = self.metadata
 
                 for column in self.columns:
                     value = self.df.iloc[t_i][column.name]
@@ -55,7 +54,7 @@ class Table(object):
                 text_i = text_i[:-2]+ ". "    
                 text.append(text_i)
 
-        self.text[TEXT_COL] =  text
+        self.text["text"] =  text
         
     def create_encoded_imputed_vectors(self):
         encoded_df =  pd.DataFrame()
@@ -81,7 +80,7 @@ class Table(object):
         embeddings = []
 
         for i in range(self.text.shape[0]):
-            text = self.text.iloc[i][TEXT_COL]
+            text = self.text.iloc[i]["text"]
             full_embedding = get_biobert_embeddings(text)[0]
             embeddings.append(full_embedding.reshape(-1))
         
@@ -90,5 +89,5 @@ class Table(object):
         merged_df = pd.concat([self.text, emb_df], axis=1)
         merged_df = merged_df.rename({i: self.name + "_" + str(i) for i in range(len(embeddings[0]))}, axis='columns')
 
-        self.embeddings = merged_df.drop([TEXT_COL], axis = 1)
+        self.embeddings = merged_df.drop(["text"], axis = 1)
         

@@ -1,0 +1,4 @@
+﻿column_name,attribute,verb,neg_verb,data_type
+ORDER_DESCRIPTION,order description ,is,,categorical
+ORDER_TYPE,order type,is,,categorical
+PATIENT_SERVICE,service ,is,,categorical

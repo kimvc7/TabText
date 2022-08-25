@@ -1,0 +1,6 @@
+﻿column_name,attribute,verb,neg_verb,data_type
+NOTE_ALL,number of notes written,is,,numerical
+NOTES_REHABILITATION,number of notes written in rehabilitation,is,,numerical
+NOTES_CASE_MANAGEMENT,number of notes written in Case Management,is,,numerical
+NOTE_TYPE_ALL,number of note types written,is,,categorical
+DX,diagnosis,is,,categorical

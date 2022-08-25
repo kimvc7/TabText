@@ -3,17 +3,9 @@ import pandas as pd
 import json
 from sklearn.preprocessing import LabelEncoder
 
-from julia import Julia
-Julia(sysimage='/home/gridsan/groups/IAI/images/2.0.0/julia-1.5.2/sys.so', compiled_modules = False)
-from interpretableai import iai
-
-
-# Load config file with static parameters
-with open('../../config.json') as config_file:
-        config = json.load(config_file)
-
-ENC_COL = config["ENC_COL"]
-
+#from julia import Julia
+#Julia(sysimage='/home/gridsan/groups/IAI/images/2.0.0/julia-1.5.2/sys.so', compiled_modules = False)
+#from interpretableai import iai
 
 def encode_numerical(column):
     new_col = []
@@ -41,15 +33,6 @@ def get_iai_imputer(df):
 
 def iai_impute_data(df, imputer):
     return imputer.transform(df)
-
-def impute_data(df, imputer_fn):
-    imp_vectors = []
-    for i in range(df.shape[0]):
-        enc_vector = df.iloc[i][ENC_COL]
-        imp_vector = imputer_fn(enc_vector)
-        imp_vectors.append(imp_vector)
-
-    return imp_vectors
 
 def date_diff_hrs(t1, t0):
     delta_t = round((t1-t0).total_seconds()/3600) # Result in hrs

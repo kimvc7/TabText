@@ -1,15 +1,10 @@
 import pandas as pd
 import numpy as np
 import sys
+import os
 
-sys.path.insert(0, '../modules')
+sys.path.insert(0, os.path.dirname(__file__) + '/../modules')
 from Table import *
-
-# Load config file with static parameters
-with open('../../config.json') as config_file:
-    config = json.load(config_file)
-    
-TEXT_COL = config["TEXT_COL"]
 
 def merge_text(table1, table2, time_col):
     merged_df = pd.DataFrame()
@@ -20,22 +15,22 @@ def merge_text(table1, table2, time_col):
 
     if table1.is_static() and table2.is_static():
         df = table1.df.copy()
-        df1[TEXT_COL] = df1[TEXT_COL] + df2[TEXT_COL]
+        df1["text"] = df1["text"] + df2["text"]
         merged_df = df1
         merged_time_col = None
 
     elif table1.is_static():
-        df2[TEXT_COL] = df1.iloc[0][TEXT_COL] + df2[TEXT_COL]
+        df2["text"] = df1.iloc[0]["text"] + df2["text"]
         merged_df = df2
     
     elif table2.is_static():
-        df1[TEXT_COL] = df1[TEXT_COL] + df2.iloc[0][TEXT_COL]
+        df1["text"] = df1["text"] + df2.iloc[0]["text"]
         merged_df = df1
     else:
         df = df1.merge(df2, how="outer", on=time_col)
         df = df.fillna("")
-        df[TEXT_COL] = df[TEXT_COL + "_x"] + df[TEXT_COL + "_y"]
-        merged_df = df[[time_col, TEXT_COL]]
+        df["text"] = df["text" + "_x"] + df["text" + "_y"]
+        merged_df = df[[time_col, "text"]]
     
     table = Table(time_col = merged_time_col)
     table.text =  merged_df

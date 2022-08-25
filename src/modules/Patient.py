@@ -5,15 +5,12 @@ from functools import reduce
 import json
 import sys
 import numpy as np
+import os
 
 # Load config file with static parameters
-with open('../../config.json') as config_file:
+with open(os.path.dirname(__file__) + '/../../config.json') as config_file:
         config = json.load(config_file)
 
-TEXT_COL = config["TEXT_COL"]
-EMB_COL = config["EMB_COL"]
-ENC_COL = config["ENC_COL"]
-IMP_COL = config["IMP_COL"]
 DIR_NAME = config["DIRECTORY_NAME"]
 
 sys.path.insert(0, DIR_NAME + 'TabText/src/utils')

@@ -17,7 +17,6 @@ FALL_LAST,fall risk score,is,,numerical
 IPA_INDEPENDENT_ADL,self care independently,performs,does not perform,binary
 IPA_LIVES,residency,is,,categorical
 IPA_TROUBLE_SWALLOW,trouble swallowing,has,does not have,binary
-LAST_PAIN_SCORE,most recent pain score,is,,numerical
+LAST_PAIN_SCORE,most recent pain score,is,,categorical
 LAST_GLASCOW_SCORE,most recent Glascow Coma score,is,,numerical
 NUTRITION_NPO,NPO,is,is not,binary
-BM,bowel movement,has had,has not had,binary

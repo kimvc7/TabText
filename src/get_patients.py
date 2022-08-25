@@ -5,11 +5,10 @@ import pickle
 import os
 
 # Load config file with static parameters
-with open('../../config.json') as config_file:
+with open(os.path.dirname(__file__) + '/../config.json') as config_file:
         config = json.load(config_file)
 
 DIR_NAME = config["DIRECTORY_NAME"]
-PATIENTS_PATH = config["PATIENTS_PATH"]
 ALL_TYPES = ["joint_embeddings", "sep_embeddings", "joint_imputations", "sep_imputations", "text"]
 
 import sys
@@ -80,15 +79,20 @@ def get_patients(tables_info, id_col, time_col, unique_ids):
     return patients
 
 
-def get_and_save_pickle_patients(tables_info, id_col, time_col, ids, prefix, missing, replace, descriptive, global_imp, feature_types = ALL_TYPES):
+def get_and_save_pickle_patients(tables_info, id_col, time_col, ids, prefix, missing, replace, descriptive, global_imp, pat_set, path, data_set, feature_types = ALL_TYPES):
     patients = []
     for pat_id in ids:
+        print(pat_id)
         tables = create_patient_tables(tables_info, pat_id, id_col, time_col)
         patient = Patient(tables, pat_id, time_col)
         patient.create_timed_data(prefix, missing, replace, descriptive, global_imp)
         
         for feature_type in feature_types:
-            if not os.path.exists(PATIENTS_PATH + feature_type):
-                os.makedirs(PATIENTS_PATH + feature_type)
+            sentence_name = data_set +  "_" + str(prefix) + "_" + str(missing) + "_" + str(replace) + "_" + str(descriptive)
+            dir_name = path + pat_set + "/" + feature_type + "/" + sentence_name + "/Patients"
             
-            getattr(patient, feature_type).to_pickle(PATIENTS_PATH + feature_type + "/" + str(patient.id) + ".pkl") 
+            if not os.path.exists(dir_name):
+                os.makedirs(dir_name)
+            
+            getattr(patient, feature_type).to_pickle(dir_name + "/" + str(patient.id) + ".pkl") 
+        
