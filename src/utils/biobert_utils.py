@@ -26,7 +26,7 @@ def get_biobert_embeddings(text, long_input=True):
     # embeddings, hidden_embeddings = get_biobert_embeddings(text)
     
     biobert_tokenizer = AutoTokenizer.from_pretrained(long_biobert_path + "tokenizer/")
-    biobert_model = LongformerModel.from_pretrained(long_biobert_path + 'model')
+    biobert_model = AutoModelForMaskedLM.from_pretrained(long_biobert_path + 'model', output_hidden_states=True)
     tokens_pt = biobert_tokenizer(text, return_tensors="pt")
     
     if not long_input:
@@ -35,10 +35,18 @@ def get_biobert_embeddings(text, long_input=True):
         tokens_pt = biobert_tokenizer(text, return_tensors="pt")
 
     outputs = biobert_model(**tokens_pt)
-    last_hidden_state = outputs.last_hidden_state
-    pooler_output = outputs.pooler_output
-    hidden_embeddings = last_hidden_state.detach().numpy()
-    embeddings = pooler_output.detach().numpy()
+    
+    if long_input:
+        hidden_embeddings = outputs.hidden_states[-1].detach().numpy()
+        last_hidden_shape = hidden_embeddings.shape
+        pooling = torch.nn.AvgPool2d([last_hidden_shape[1], 1])
+        embeddings = pooling(outputs.hidden_states[-1])
+        embeddings = torch.reshape(embeddings, (1, 768)).detach().numpy()
+    else:
+        last_hidden_state = outputs.last_hidden_state
+        pooler_output = outputs.pooler_output
+        hidden_embeddings = last_hidden_state.detach().numpy()
+        embeddings = pooler_output.detach().numpy()
 
     return embeddings, hidden_embeddings
 
