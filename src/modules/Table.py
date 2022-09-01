@@ -30,7 +30,7 @@ class Table(object):
         return self.time_col is None      
     
         
-    def create_text(self, prefix, missing_word, replace_numbers, descriptive, omit_empty = True):
+    def create_text(self, prefix, missing_word, replace_numbers, descriptive, meta, omit_empty = True, sep = "</s>"):
         self.text = pd.DataFrame()
         if self.is_temporal():
             self.text[self.time_col] = self.df[self.time_col]
@@ -42,7 +42,7 @@ class Table(object):
         else:
             for t_i in range(self.df.shape[0]):
                 text_i = ""
-                if len(str(self.metadata)) >1:
+                if meta & (len(str(self.metadata)) >1):
                     text_i = self.metadata
 
                 for column in self.columns:
@@ -51,7 +51,7 @@ class Table(object):
                     if len(col_text) >0:
                         col_text += ", "
                     text_i += col_text
-                text_i = text_i[:-2]+ ". "    
+                text_i = text_i[:-2]+ ". " + sep    
                 text.append(text_i)
 
         self.text["text"] =  text
