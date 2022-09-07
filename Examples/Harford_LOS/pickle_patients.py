@@ -3,12 +3,16 @@ from datetime import timedelta
 import json
 import sys
 import argparse
-
 import warnings
 warnings.filterwarnings("ignore")
 
 with open('config.json') as config_file:
         HH_config = json.load(config_file)
+        
+        
+##############################################
+           #Load data and parameters
+##############################################
 
 DIR_NAME = HH_config["TABTEXT_PATH"]
 EXAMPLE_PATH = HH_config["EXAMPLE_PATH"]
@@ -40,7 +44,7 @@ args = parser.parse_args()
                     
 JOB_NUM = args.job_num
 JOB_SET = args.job_set
-JOB_LENGTH = 1000
+JOB_LENGTH = 500
 DATA_PATH = EXAMPLE_PATH + HH_config[args.data_set + "_PATH"] 
 
 paths = [EXAMPLE_PATH, DATA_PATH, TABLES_FILE, COLUMNS_PATH]
@@ -49,41 +53,50 @@ train_end = datetime.date(TRAINING_END["YEAR"], TRAINING_END["MONTH"], TRAINING_
 val_end = datetime.date(VAL_END["YEAR"], VAL_END["MONTH"], VAL_END["DAY"])
 test_end = datetime.date(TESTING_END["YEAR"], TESTING_END["MONTH"], TESTING_END["DAY"])
 
-
 admission_df = pd.read_csv(DATA_PATH + ADMISSION_INFO_FILE)
 discharge_df = pd.read_csv(DATA_PATH + DISCHARGE_INFO_FILE)
 
-training_ids = get_filtered_ids(admission_df, discharge_df, ID_COL, TIME_COL, LOCATION_COL, HOSPITAL, train_start, train_end)
-validation_ids = get_filtered_ids(admission_df, discharge_df, ID_COL, TIME_COL, LOCATION_COL, HOSPITAL, train_end, val_end)
-testing_ids = get_filtered_ids(admission_df, discharge_df, ID_COL, TIME_COL, LOCATION_COL, HOSPITAL, val_end, test_end)
+
+##############################################
+                #Choose settings
+##############################################
+imputer = "zero_imp"
+prefix = ""
+missing = "is missing"
+replace = False
+descriptive = False
+meta = False
 
 
+##############################################
+           #Get relevant patient ids
+##############################################
 
 if JOB_SET == "Training":
-    train_tables_info, global_imputer = get_model_info(paths, ID_COL, TIME_COL, training_ids)
+    training_ids = get_filtered_ids(admission_df, discharge_df, ID_COL, TIME_COL, LOCATION_COL, HOSPITAL, train_start, train_end)
+    train_tables_info, global_imputer = get_model_info(paths, ID_COL, TIME_COL, imputer, training_ids)
     all_ids = training_ids
     tables_info = train_tables_info
     
 elif JOB_SET == "Validation":
-    val_tables_info, global_imputer = get_model_info(paths, ID_COL, TIME_COL, validation_ids)
+    validation_ids = get_filtered_ids(admission_df, discharge_df, ID_COL, TIME_COL, LOCATION_COL, HOSPITAL, train_end, val_end)
+    val_tables_info, global_imputer = get_model_info(paths, ID_COL, TIME_COL, imputer, validation_ids)
     all_ids = validation_ids
     tables_info = val_tables_info
     
 elif JOB_SET == "Testing":
-    test_tables_info, global_imputer = get_model_info(paths, ID_COL, TIME_COL, testing_ids)
+    testing_ids = get_filtered_ids(admission_df, discharge_df, ID_COL, TIME_COL, LOCATION_COL, HOSPITAL, val_end, test_end)
+    test_tables_info, global_imputer = get_model_info(paths, ID_COL, TIME_COL, imputer, testing_ids)
     all_ids = testing_ids
     tables_info = test_tables_info
 
 pats = [all_ids[i] for i in range(JOB_NUM*JOB_LENGTH, min((JOB_NUM+1)*JOB_LENGTH, len(all_ids)))]
 
-#Choose sentence settings
-prefix = ""
-missing = ""
-replace = False
-descriptive = True
 
-feature_types = ["joint_embeddings", "joint_imputations", "text"]
+##############################################
+#Save patients info for desired feature types
+##############################################
 
-#Save pickle files for patients in 'pats'
-get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, pats, prefix, missing, replace, descriptive, global_imputer, JOB_SET, EXAMPLE_PATH, args.data_set, feature_types)
+feature_types = ["joint_embeddings", "sep_embeddings"]
+get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, pats, prefix, missing, replace, descriptive, meta, global_imputer, JOB_SET + "_New/", EXAMPLE_PATH, args.data_set, feature_types)
 

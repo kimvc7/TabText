@@ -21,6 +21,9 @@ from data_utils import *
 
 
 def create_columns(attributes_info):
+    """
+    Creates Column objects for the attributes in attributes_info
+    """
     columns = []
     for col_name in attributes_info.names:
         attribute_info = getattr(attributes_info, col_name)
@@ -41,6 +44,9 @@ def create_columns(attributes_info):
     return columns
 
 def create_patient_tables(tables_info, pat_id, id_col, time_col):
+    """
+    Creates Table objects for patient with id pat_id using dataframes in tables_info
+    """
     pat_tables = []
     for i in range(len(tables_info)):
 
@@ -71,6 +77,9 @@ def create_patient_tables(tables_info, pat_id, id_col, time_col):
     return pat_tables
 
 def get_patients(tables_info, id_col, time_col, unique_ids):
+    """
+    Creates Patient objects for each patient in unique_ids using data from tables_info
+    """
     patients = []
     for pat_id in unique_ids:
         tables = create_patient_tables(tables_info, pat_id, id_col, time_col)
@@ -79,17 +88,17 @@ def get_patients(tables_info, id_col, time_col, unique_ids):
     return patients
 
 
-def get_and_save_pickle_patients(tables_info, id_col, time_col, ids, prefix, missing, replace, descriptive, global_imp, pat_set, path, data_set, feature_types = ALL_TYPES):
+def get_and_save_pickle_patients(tables_info, id_col, time_col, ids, prefix, missing, replace, descriptive, meta, global_imp, pat_set, path, data_set, feature_types = ALL_TYPES):
     patients = []
     for pat_id in ids:
         print(pat_id)
         tables = create_patient_tables(tables_info, pat_id, id_col, time_col)
         patient = Patient(tables, pat_id, time_col)
-        patient.create_timed_data(prefix, missing, replace, descriptive, global_imp)
+        patient.create_timed_data(prefix, missing, replace, descriptive, meta, global_imp)
         
         for feature_type in feature_types:
-            sentence_name = data_set +  "_" + str(prefix) + "_" + str(missing) + "_" + str(replace) + "_" + str(descriptive)
-            dir_name = path + pat_set + "/" + feature_type + "/" + sentence_name + "/Patients"
+            sent_name = data_set +"_"+ str(prefix) +"_"+ str(missing) +"_"+ str(replace) +"_"+ str(descriptive) +"_"+ str(meta)
+            dir_name = path + pat_set +"/"+ feature_type +"/"+ sent_name + "/Patients"
             
             if not os.path.exists(dir_name):
                 os.makedirs(dir_name)

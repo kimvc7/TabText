@@ -19,6 +19,14 @@ from biobert_utils import *
 from data_utils import *
 
 class Patient(object):
+    """
+    Patient module containing original, encoded, imputed, and text-embedded information for a specific id.
+    
+    pat_id: The patient id.
+    tables: List of table objects with the tabular information for the given patient.
+    time_col: Name of the column in df containing the timestamp for each observation.
+    
+    """
     def __init__(self, tables, pat_id, time_col):
         self.id = pat_id
         self.time_col = time_col
@@ -31,11 +39,24 @@ class Patient(object):
             table_names.append(table.name)
         return table_names
 
-    def create_timed_data(self, prefix, missing, replace_numbers, descriptive, global_imp, sep_tables=True, join_tables=True):
+    def create_timed_data(self, prefix, missing, replace_nums, descriptive, meta, global_imp, sep_tables=True, join_tables=True):
+        """
+        Creates original, encoded, imputed, and text-embedded (timestamped) dataframes with the information of the given patient.
         
+        Parameters::
+            prefix: String containing the desired prefix to add at the beginning of each sentence ("", "the Patient", etc.)
+            missing: String describing how to handle missing values (e.g. "", "is missing" "imp_replace") 
+            replace_nums: Boolean indicating weather or not to replace numerical values with text (e.g. very low, high, normal)
+            descriptive: Boolean indicating weather or not each sentence should be descriptive.
+            meta: Boolean indicating weather or not to include meta information in the paragraphs.
+            global_imp: Function used to impute missing values of the merged tables.
+            sep_tables: Boolean indicating weather or not to impute numbers and embed text before merging the table objects.
+            joint_tables: Boolean indicating weather or not to impute numbers and embed text after merging the table objects.
+            
+        """
         for table in self.tables:
-            table.create_text(prefix, missing, replace_numbers, descriptive)
             table.create_encoded_imputed_vectors()
+            table.create_text(prefix, missing, replace_nums, descriptive, meta)
 
 
         text_table = reduce(lambda t1, t2: merge_text(t1, t2, self.time_col), self.tables)

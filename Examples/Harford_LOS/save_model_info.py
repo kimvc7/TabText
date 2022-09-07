@@ -3,12 +3,15 @@ from datetime import timedelta
 import json
 import sys
 import argparse
-
 import warnings
 warnings.filterwarnings("ignore")
 
 with open('config.json') as config_file:
         HH_config = json.load(config_file)
+        
+##############################################
+           #Load data and parameters
+##############################################
 
 DIR_NAME = HH_config["TABTEXT_PATH"]
 EXAMPLE_PATH = HH_config["EXAMPLE_PATH"]
@@ -43,9 +46,13 @@ train_end = datetime.date(TRAINING_END["YEAR"], TRAINING_END["MONTH"], TRAINING_
 val_end = datetime.date(VAL_END["YEAR"], VAL_END["MONTH"], VAL_END["DAY"])
 test_end = datetime.date(TESTING_END["YEAR"], TESTING_END["MONTH"], TESTING_END["DAY"])
 
-
 admission_df = pd.read_csv(DATA_PATH + ADMISSION_INFO_FILE)
 discharge_df = pd.read_csv(DATA_PATH + DISCHARGE_INFO_FILE)
 
+
+##############################################
+      #Save Model info w.r.t Training Set
+##############################################
+imputer = "zero_imp"
 training_ids = get_filtered_ids(admission_df, discharge_df, ID_COL, TIME_COL, LOCATION_COL, HOSPITAL, train_start, train_end)
-save_model_info(paths, ID_COL, TIME_COL, "zero", training_ids)
+save_model_info(paths, ID_COL, TIME_COL, imputer, training_ids)

@@ -15,15 +15,15 @@ long_biobert_path = config["LONG_BIOBERT_PATH"]
 
 
 def get_biobert_embeddings(text, long_input=True):
-    # Inputs:
-    #   text -> Input text (str)
-    #
-    # Outputs:
-    #   embeddings -> Final Biobert embeddings with vector dimensionality = (1,768)
-    #   hidden_embeddings -> Last hidden layer in Biobert model with vector dimensionality = (token_size,768)
-
-    # %% EXAMPLE OF USE
-    # embeddings, hidden_embeddings = get_biobert_embeddings(text)
+    """
+    Parameters::
+        text: String with input text
+        long_input: Boolean indicating weather to use Clinical LongFormer or Clinical Bert.
+        
+    Returns::
+        embeddings: Final Biobert embeddings with vector dimensionality = (1,768)
+        hidden_embeddings: Last hidden layer in Biobert model with vector dimensionality = (token_size, 768)
+    """
     
     biobert_tokenizer = AutoTokenizer.from_pretrained(long_biobert_path + "tokenizer/")
     biobert_model = AutoModelForMaskedLM.from_pretrained(long_biobert_path + 'model', output_hidden_states=True)
@@ -51,6 +51,13 @@ def get_biobert_embeddings(text, long_input=True):
     return embeddings, hidden_embeddings
 
 def create_embeddings(df):
+    """
+    Parameters::
+        df: DataFrame with a column named "text"
+        
+    Returns::
+        merged_df: DataFrame with 768 columns; each row contains the embeddings for the text in the corresponding row of df.
+    """
     embeddings = []
 
     for i in range(df.shape[0]):

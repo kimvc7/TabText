@@ -7,6 +7,16 @@ sys.path.insert(0, os.path.dirname(__file__) + '/../modules')
 from Table import *
 
 def merge_text(table1, table2, time_col):
+    """
+    Parameters::
+        table1, table2: Table objects to be merged (in that order)
+        time_col: Name of the column containing the timestamps for each table.
+    
+    Returns::
+        table: Table object whose .text dataframe is the result of merging table1.text and table2.text.
+        1) If one of the tables is static, its static text is concatenated to the text in each row of the other table.
+        2) if none of the tables are static, texts with the same timestamps in table1 and table2 are merged into a single string. 
+    """
     merged_df = pd.DataFrame()
     merged_time_col = time_col
     
@@ -40,6 +50,19 @@ def merge_text(table1, table2, time_col):
 
 
 def merge_tables(table1, table2, time_col, table_attribute):
+    """
+    Parameters::
+        table1, table2: Table objects to be merged (in that order)
+        time_col: Name of the column containing the timestamps for each table.
+        table_attribute: String with the name of a table object attribute (e.g. "encodings", "imputations" or "embeddings")
+    
+    Returns::
+        table: Table object whose dataframe attribute 'table_attribute' is the result of merging the corresponding attribute from
+        table1 and table2
+        1) If one of the tables is static, its single-row table_attribute is concatenated to each row in the table_attribute of
+        the other table.
+        2) If none of the tables are static, table_attributes with the same timestamps in table1 and table2 are concatenated. 
+    """
     merged_df = pd.DataFrame()
     merged_time_col = time_col
     
