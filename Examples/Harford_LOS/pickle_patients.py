@@ -98,5 +98,5 @@ pats = [all_ids[i] for i in range(JOB_NUM*JOB_LENGTH, min((JOB_NUM+1)*JOB_LENGTH
 ##############################################
 
 feature_types = ["joint_embeddings", "sep_embeddings"]
-get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, pats, prefix, missing, replace, descriptive, meta, global_imputer, JOB_SET + "_New/", EXAMPLE_PATH, args.data_set, feature_types)
+get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, pats, prefix, missing, replace, descriptive, meta, global_imputer, JOB_SET + "/", EXAMPLE_PATH, args.data_set, feature_types)
 
