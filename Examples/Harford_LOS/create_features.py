@@ -98,4 +98,4 @@ pats = [all_ids[i] for i in range(JOB_NUM*JOB_LENGTH, min((JOB_NUM+1)*JOB_LENGTH
 
 for feature_type in ["joint_imputations", "joint_embeddings", "sep_embeddings", "sep_imputations"]:
     sent_name = args.data_set + "_" + str(prefix) +"_"+ str(missing)+"_"+str(replace)+"_"+str(descriptive)+"_"+str(meta)
-    get_and_save_features(pats, TIME_COL, ID_COL, feature_type, discharge_df, JOB_SET + "_New", EXAMPLE_PATH, sent_name, job_id=str(JOB_NUM))
+    get_and_save_features(pats, TIME_COL, ID_COL, feature_type, discharge_df, JOB_SET + "/", EXAMPLE_PATH, sent_name, job_id=str(JOB_NUM))
