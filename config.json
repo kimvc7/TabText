@@ -2,14 +2,12 @@
   "_comment": "===== CONSTAT FILE PATHS =====",
   "DIRECTORY_NAME": "/home/gridsan/kimvc/HAIM_H2O_shared/",
   "BIOBERT_PATH":  "/home/gridsan/kimvc/haim_shared/pretrained_bert_tf/biobert_pretrain_output_all_notes_150000/",
-  "PATIENTS_PATH": "./Patients/",
-  "ATTRIBUTES_PATH": "./ModelInfo/AttributesInfo",
-  "IMPUTERS_PATH": "./ModelInfo/Imputers",
+  "LONG_BIOBERT_PATH": "/home/gridsan/kimvc/DB_research_BST_shared/models/",
+  "PATIENTS_PATH": "TrainingPatients/,,False,True/",
+  "ATTRIBUTES_PATH": "ModelInfo/AttributesInfo",
+  "IMPUTERS_PATH": "ModelInfo/Imputers",
 
   "_comment": "===== CONSTANT COLUMN KEYS =====",
   "TEXT_COL": "text",
-  "NUM_EMB":768,
-  "EMB_COL": "embeddings",
-  "ENC_COL": "encoded",
-  "IMP_COL": "imputed"
+  "NUM_EMB":768
 }
