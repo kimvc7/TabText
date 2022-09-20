@@ -39,7 +39,7 @@ class Patient(object):
             table_names.append(table.name)
         return table_names
 
-    def create_timed_data(self, prefix, missing, replace_nums, descriptive, meta, global_imp, sep_tables=True, join_tables=True):
+    def create_timed_data(self, prefix, missing, replace_nums, descriptive, meta, global_imp, feature_types):
         """
         Creates original, encoded, imputed, and text-embedded (timestamped) dataframes with the information of the given patient.
         
@@ -58,31 +58,34 @@ class Patient(object):
             table.create_encoded_imputed_vectors()
             table.create_text(prefix, missing, replace_nums, descriptive, meta)
 
-
-        text_table = reduce(lambda t1, t2: merge_text(t1, t2, self.time_col), self.tables)
-        self.text = text_table.text
-        enc_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "encodings"), self.tables)
-        self.encodings = enc_table.encodings
+        reversed_tables = list(reversed(self.tables))
+        text_table = reduce(lambda t1, t2: merge_text(t1, t2, self.time_col), reversed_tables)
+        self.text = text_table.text.sort_values(by=[self.time_col])
+        enc_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "encodings"), reversed_tables)
+        self.encodings = enc_table.encodings.sort_values(by=[self.time_col])
         
 
-        if join_tables:
+        if "joint_embeddings" in feature_types:
             
-            self.joint_embeddings = create_embeddings(self.text)
+            self.joint_embeddings = create_embeddings(self.text).sort_values(by=[self.time_col])
             
+        if "joint_imputations" in feature_types:
             joint_imputations = global_imp(self.encodings.drop([self.time_col], axis = 1))
             joint_imputations[self.time_col] = self.encodings[self.time_col]
-            self.joint_imputations = joint_imputations
+            self.joint_imputations = joint_imputations.sort_values(by=[self.time_col])
                 
-        if sep_tables:
+        if "sep_embeddings" in feature_types:
             
             for table in self.tables:
                 table.create_embeddings()
                     
-            emb_table= reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "embeddings"), self.tables)
-            self.sep_embeddings = emb_table.embeddings
+            emb_table= reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "embeddings"), reversed_tables)
+            self.sep_embeddings = emb_table.embeddings.sort_values(by=[self.time_col])
+            
+        if "sep_imputations" in feature_types:
   
-            imp_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "imputations"), self.tables)
-            self.sep_imputations = imp_table.imputations
+            imp_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "imputations"), reversed_tables)
+            self.sep_imputations = imp_table.imputations.sort_values(by=[self.time_col])
 
 
 
