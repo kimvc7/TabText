@@ -195,7 +195,7 @@ def save_model_info(paths, id_col, time_col, imputer, pat_ids):
         base_cols = [id_col]  
         
         if not is_static:
-            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True).dt.date
+            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True)
             base_cols += [time_col]
         
         columns_file = info_df.iloc[i]["columns_file"]
@@ -276,7 +276,7 @@ def get_model_info(paths, id_col, time_col, imputer, pat_ids):
         base_cols = [id_col]
         
         if not is_static:
-            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True).dt.date
+            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True)
             base_cols += [time_col]
         
         attributes_info = pd.read_pickle(example_path + ATTRIBUTES_PATH + "/" + name + ".pkl")    
