@@ -32,14 +32,18 @@ class Attribute(object):
         sd: The standard deviation of the values observed for this column (to be computed usign Training set)
         column_encoder: The function used to encode categorical values of this column.
     """
-    def __init__(self, attribute, verb, neg_verb, col_type, avg, sd, encoder):
+    def __init__(self, attribute, verb, neg_verb, col_type, avg, sd, col_encoder):
         self.attribute = attribute
         self.column_verb = verb
         self.column_neg_verb = neg_verb
         self.column_type = col_type
         self.avg = avg
         self.sd = sd
-        self.column_encoder = encoder
+        if col_encoder is None:
+            self.column_encoder = encode_numerical
+        else:
+            self.column_encoder = lambda x: encode_categorical(x, col_encoder)
+       
         
 class AttributesInfo(object):
     """
@@ -61,7 +65,9 @@ class AttributesInfo(object):
             names.append(col_name)
         return names
 
+
     def create_attributes(self, df, create_encoder_fn):
+        
         for i in range(self.info_file.shape[0]):
             col_name, attribute, verb, neg_verb, col_type = self.info_file.iloc[i]
             sd, avg = None, None
@@ -70,15 +76,15 @@ class AttributesInfo(object):
                 col_values = df[[col_name]].astype(str)
                 col_values = col_values[col_name][pd.notnull(col_values[col_name])]
                 col_encoder = create_encoder_fn(col_values)
-                enc = lambda x: encode_categorical(x, col_encoder)
 
             if col_type == "numerical":
                 col_values = df[[col_name]].astype(np.float)
                 col_values = col_values[col_name][pd.notnull(col_values[col_name])]
                 avg = col_values.mean()
                 sd = col_values.std()
-                enc = encode_numerical
-            setattr(self, col_name,  Attribute(attribute, verb, neg_verb, col_type, avg, sd, enc))
+                col_encoder = None
+                
+            setattr(self, col_name, Attribute(attribute, verb, neg_verb, col_type, avg, sd, col_encoder))
 
 class TableInfo(object):
     """
@@ -189,7 +195,7 @@ def save_model_info(paths, id_col, time_col, imputer, pat_ids):
         base_cols = [id_col]  
         
         if not is_static:
-            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True)
+            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True).dt.date
             base_cols += [time_col]
         
         columns_file = info_df.iloc[i]["columns_file"]
@@ -233,7 +239,7 @@ def save_model_info(paths, id_col, time_col, imputer, pat_ids):
         global_imputer = lambda x: iai_impute_data(x, imp)
     
     with open(example_path + IMPUTERS_PATH + "_" + imputer + "/global_imputer.pkl", 'wb') as files:
-            pickle.dump(global_imputer, files)
+        pickle.dump(global_imputer, files)
 
 
 
@@ -270,15 +276,15 @@ def get_model_info(paths, id_col, time_col, imputer, pat_ids):
         base_cols = [id_col]
         
         if not is_static:
-            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True)
+            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True).dt.date
             base_cols += [time_col]
         
-        attributes_info = pd.read_pickle(example_path + ATTRIBUTES_PATH + "/" + name + ".pkl")
+        attributes_info = pd.read_pickle(example_path + ATTRIBUTES_PATH + "/" + name + ".pkl")    
         table_imputer = pd.read_pickle(example_path + IMPUTERS_PATH + "_" + imputer + "/" + name + ".pkl")
         table_cols = attributes_info.names
         df = table_df[base_cols + table_cols]
         info = TableInfo(name, metadata, table_imputer, df, attributes_info)
         tables_info.append(info)
-    
+        
     global_imputer = pd.read_pickle(example_path + IMPUTERS_PATH + "_" + imputer + "/global_imputer.pkl")
     return tables_info, global_imputer
