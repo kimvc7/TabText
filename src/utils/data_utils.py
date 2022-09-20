@@ -3,9 +3,9 @@ import pandas as pd
 import json
 from sklearn.preprocessing import LabelEncoder
 
-from julia import Julia
-Julia(sysimage='/home/gridsan/groups/IAI/images/2.0.0/julia-1.5.2/sys.so', compiled_modules = False)
-from interpretableai import iai
+#from julia import Julia
+#Julia(sysimage='/home/gridsan/groups/IAI/images/2.0.0/julia-1.5.2/sys.so', compiled_modules = False)
+#from interpretableai import iai
 
 def encode_numerical(column):
     new_col = []
