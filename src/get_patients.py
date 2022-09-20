@@ -94,7 +94,7 @@ def get_and_save_pickle_patients(tables_info, id_col, time_col, ids, prefix, mis
         print(pat_id)
         tables = create_patient_tables(tables_info, pat_id, id_col, time_col)
         patient = Patient(tables, pat_id, time_col)
-        patient.create_timed_data(prefix, missing, replace, descriptive, meta, global_imp)
+        patient.create_timed_data(prefix, missing, replace, descriptive, meta, global_imp, feature_types)
         
         for feature_type in feature_types:
             sent_name = data_set +"_"+ str(prefix) +"_"+ str(missing) +"_"+ str(replace) +"_"+ str(descriptive) +"_"+ str(meta)
