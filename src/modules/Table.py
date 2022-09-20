@@ -57,14 +57,14 @@ class Table(object):
         if self.imputer is not None:
             self.imputations = self.imputer(encoded_df)
             if self.is_temporal():
-                self.imputations[self.time_col] = self.df[self.time_col]
+                self.imputations[self.time_col] = list(self.df[self.time_col])
        
         self.encodings = encoded_df
         if self.is_temporal():
-            self.encodings[self.time_col] = self.df[self.time_col]
+            self.encodings[self.time_col] = list(self.df[self.time_col])
         
 
-    def create_text(self, prefix, missing_word, replace_numbers, descriptive, meta, omit_empty = True, sep = "</s>"):
+    def create_text(self, prefix, missing_word, replace_numbers, descriptive, meta, omit_empty = False, sep = "</s>"):
         """
         Creates a timestamped dataframe; each row contains a String (paragraph) with all the tabular information for the
         corresponding timestamp.
