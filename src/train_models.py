@@ -7,6 +7,13 @@ from xgboost import plot_importance
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Dense
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras import regularizers
+from keras.callbacks import EarlyStopping
 import json
 import os
 
@@ -54,3 +61,33 @@ def train_xgb(train_df, test_df, target, n_est, max_param, lr, λ):
 
     auc = roc_auc_score(y_test, y_pred)
     return auc
+
+
+def train_nn(train_df, test_df, target, dim, num_epochs, lr, batch_size, λ):
+    X_train, X_test = train_df.drop(columns=[target]), test_df.drop(columns=[target])
+    y_train, y_test = train_df[target], test_df[target]
+
+        
+    model = Sequential()
+    model.add(Dense(200, input_shape=(dim,), activation='relu', kernel_regularizer=regularizers.L1L2(l1=0, l2=λ)))
+    model.add(Dense(200, activation='relu', kernel_regularizer=regularizers.L1L2(l2=λ)))
+    model.add(Dense(200, activation='relu', kernel_regularizer=regularizers.L1L2(l2=λ)))
+    model.add(Dense(1, activation='sigmoid'))
+    
+    early_stopping = EarlyStopping(
+    monitor='val_loss',
+    min_delta=0,
+    patience=500,
+    verbose=0,
+    mode='auto',
+    baseline=None,
+    restore_best_weights=True)
+    
+
+    optimizer = keras.optimizers.Adam(learning_rate=lr)
+    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=[keras.metrics.AUC()])
+    model.fit(X_train, y_train, epochs=num_epochs, batch_size=batch_size, validation_data=(X_test, y_test), callbacks=[early_stopping])
+
+
+    y_pred, test_auc = model.evaluate(X_test, y_test)
+    return test_auc
