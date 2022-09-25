@@ -86,6 +86,3 @@ class Patient(object):
   
             imp_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "imputations"), reversed_tables)
             self.sep_imputations = imp_table.imputations.sort_values(by=[self.time_col])
-
-
-
