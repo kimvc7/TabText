@@ -74,13 +74,13 @@ def merge_tables(table1, table2, time_col, table_attribute):
         merged_time_col = None
 
     elif table2.is_static():
-        repeated_df1 = df1.loc[df1.index.repeat(df2.shape[0])].reset_index()
-        df2[df1.columns] = np.array(repeated_df1[df1.columns])
-        merged_df = df2
+        repeated_df1 = df1.loc[df1.index.repeat(df2.shape[0])].reset_index(drop=True)
+        repeated_df1[df2.columns] = np.array(df2[df2.columns])
+        merged_df = repeated_df1
 
     elif table1.is_static():
-        repeated_df2 = df2.loc[df2.index.repeat(df1.shape[0])].reset_index()
-        df1[df2.columns] = np.array(repeated_df2[df2.columns])
+        repeated_df2 = df2.loc[df2.index.repeat(df1.shape[0])].reset_index(drop=True)
+        repeated_df2[df1.columns] = np.array(df1[df1.columns])
         merged_df = df1
     
     else:
@@ -90,7 +90,3 @@ def merge_tables(table1, table2, time_col, table_attribute):
     setattr(table, table_attribute, merged_df)
 
     return table
-
-
-
-
