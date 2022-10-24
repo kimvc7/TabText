@@ -60,19 +60,33 @@ class Patient(object):
 
         reversed_tables = list(reversed(self.tables))
         text_table = reduce(lambda t1, t2: merge_text(t1, t2, self.time_col), reversed_tables)
-        self.text = text_table.text.sort_values(by=[self.time_col])
-        enc_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "encodings"), reversed_tables)
-        self.encodings = enc_table.encodings.sort_values(by=[self.time_col])
         
+        if self.time_col is not None:
+            self.text = text_table.text.sort_values(by=[self.time_col])
+        else:
+            self.text = text_table.text
+            
+        enc_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "encodings"), reversed_tables)
+        
+        if self.time_col is not None:
+            self.encodings = enc_table.encodings.sort_values(by=[self.time_col])
+            
 
         if "joint_embeddings" in feature_types:
             
-            self.joint_embeddings = create_embeddings(self.text).sort_values(by=[self.time_col])
+            if self.time_col is not None:
+                self.joint_embeddings = create_embeddings(self.text).sort_values(by=[self.time_col])
+            else:
+                self.joint_embeddings = create_embeddings(self.text)
             
         if "joint_imputations" in feature_types:
-            joint_imputations = global_imp(self.encodings.drop([self.time_col], axis = 1))
-            joint_imputations[self.time_col] = self.encodings[self.time_col]
-            self.joint_imputations = joint_imputations.sort_values(by=[self.time_col])
+            
+            if self.time_col is not None:
+                joint_imputations = global_imp(self.encodings.drop([self.time_col], axis = 1))
+                joint_imputations[self.time_col] = self.encodings[self.time_col]
+                self.joint_imputations = joint_imputations.sort_values(by=[self.time_col])
+            else:
+                joint_imputations = global_imp(self.encodings)
                 
         if "sep_embeddings" in feature_types:
             
@@ -80,9 +94,17 @@ class Patient(object):
                 table.create_embeddings()
                     
             emb_table= reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "embeddings"), reversed_tables)
-            self.sep_embeddings = emb_table.embeddings.sort_values(by=[self.time_col])
+            
+            if self.time_col is not None:
+                self.sep_embeddings = emb_table.embeddings.sort_values(by=[self.time_col])
+            else:
+                self.sep_embeddings = emb_table.embeddings
             
         if "sep_imputations" in feature_types:
   
             imp_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "imputations"), reversed_tables)
-            self.sep_imputations = imp_table.imputations.sort_values(by=[self.time_col])
+    
+            if self.time_col is not None:
+                self.sep_imputations = imp_table.imputations.sort_values(by=[self.time_col])
+            else:
+                self.sep_imputations = imp_table.imputations
