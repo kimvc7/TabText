@@ -1,2 +1,2 @@
 # TabText
-TabText: a Systematic Approach to Aggregate Knowledge Across Tabular Data Structures
+TabText: A Flexible and Contextual Approach to Tabular Data Representation
