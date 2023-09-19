@@ -5,7 +5,16 @@ BSA,Body surface area,is,,numerical
 BMI,Body mass index,is,,numerical
 TEMPERATURE,temperature,is,,numerical
 PULSE,pulse,is,,numerical
-WEIGHT_enc,weight,is,,numerical
-HEIGHT_enc,height,is,,numerical
+WEIGHT,weight,is,,numerical
+HEIGHT,height,is,,numerical
 RESPIRATIONS,respirations,is,,numerical
 ENCOUNTER_TYPE,type of encounter,is,,categorical
+Appt_Status,Appointment status,is,,categorical
+SPECIALTY,Specialty,is,,categorical
+PATIENT_CLASS,Class of patient,is,,categorical
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,

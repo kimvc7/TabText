@@ -1,3 +1,0 @@
-column_name,attribute,verb,neg_verb,data_type
-FLO_MEAS_NAME_signs,Reason of MEAS,is,,categorical
-MEAS_VALUE_signs,Value of MEAS,is,,categorical

@@ -1,11 +1,10 @@
 column_name,attribute,verb,neg_verb,data_type
-LOC_NAME,hospital,is,,categorical
-ADT_PAT_CLASS_C,ADT status,is,,categorical
+BIRTH_DATE,birth date,is,,categorical
 age,age,is,,numerical
 ETHNICITY,ethnicity,is,,categorical
 RACE,race,is,,categorical
 SEX,sex,is,,categorical
 FIRST_THREE_DIGITS_ZIP,the first three digits of zip code,is,,categorical
 PAT_CLASS,patient class,is,,categorical
-WEIGHT_demo,weight,is,,numerical
-HEIGHT_demo,height,is,,numerical
+WEIGHT,weight,is,,numerical
+HEIGHT,height,is,,numerical

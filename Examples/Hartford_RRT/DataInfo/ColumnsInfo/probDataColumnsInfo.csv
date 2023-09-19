@@ -1,3 +1,6 @@
 column_name,attribute,verb,neg_verb,data_type
 PROBSTATUS,Problem status,is,,categorical
 PRINCIPAL_PROB_YN,Principle problem,is,,binary
+DX_NAME,Diagnosis name,is,,categorical
+DX_GROUP,Diagnosis group,is,,categorical
+CURRENT_ICD10_LIST,List of current ICD10 code (international classification of drug code version 10),is,,categorical

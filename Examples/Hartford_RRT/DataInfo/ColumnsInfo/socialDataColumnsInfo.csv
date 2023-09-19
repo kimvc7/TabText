@@ -11,5 +11,16 @@ ALCOHOL_OZ_PER_WK, number of oz of alcohol per week,is,,numerical
 USES_ALCOHOL, alcohol use status,is,,categorical
 ALCOHOL_COMMENT,the comment of alcohol,is,,categorical
 IV_DRUG_USER_YN,intraveneous drug user,is,is not,binary
-ILLICIT_DRUG_USER,illicit drug user,is,,categorical
+IS_ILL_DRUG_USER,illicit drug user,is,,categorical
 ILLICIT_DRUG_FREQ,frequency of illicit drug,is,,numerical
+SMOKING_QUIT_DATE,date of that patient quit smoking,is,,categorical
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+    ,,,,
+,,,,
