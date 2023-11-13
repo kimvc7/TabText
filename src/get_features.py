@@ -60,21 +60,30 @@ def get_features(ids, time_col, id_col, patients_path, feature_type, disch_info,
             print(pat_id)
     return features
 
-def add_patient_features(features, pat_id, timebounded_df, id_col, time_col, weight_fn):
+def add_patient_features(features, pat_id, timebounded_df, id_col, time_col, weight_fn, time_series=False):
     feature_cols = list(timebounded_df.columns)[:]
-    feature_cols.remove(time_col)
-    timed_df = timebounded_df
-    all_dates = timed_df.sort_values(time_col)[time_col].dt.date.unique()
+    if time_col is not None:
+        feature_cols.remove(time_col)
+        timed_df = timebounded_df
+        all_dates = timed_df.sort_values(time_col)[time_col].dt.date.unique()
+        features_df = pd.DataFrame(columns = [id_col, time_col] + feature_cols)
 
-    features_df = pd.DataFrame(columns = [id_col, time_col] + feature_cols)
-
-    index = 0
-    for date in all_dates:
-        sub_df =  timed_df[timed_df[time_col].dt.date <= date]
-        sub_df["weights"] = weight_fn(sub_df[time_col].dt.to_pydatetime())
-        new_row = [pat_id, date] +list(sub_df[feature_cols].multiply(sub_df["weights"], axis="index").sum().values)
-        features_df.loc[index] = new_row
-        index +=1
+        index = 0
+        for date in all_dates:
+            sub_df =  timed_df[timed_df[time_col].dt.date <= date]
+            if time_series:
+                sub_df["weights"] = weight_fn(sub_df[time_col].dt.to_pydatetime())
+                new_row = [pat_id, date] + list(sub_df[feature_cols].multiply(sub_df["weights"], axis="index").sum().values)
+            else:
+                new_row = [pat_id, date] + [sub_df[x][sub_df[x].last_valid_index()] for x in feature_cols]
+            features_df.loc[index] = new_row
+            index +=1
+            
+    else:
+        features_df = pd.DataFrame(columns = [id_col] + feature_cols)
+        sub_df =  timebounded_df
+        new_row = [pat_id] + [sub_df[x][sub_df[x].last_valid_index()] for x in feature_cols]
+        features_df.loc[0] = new_row
 
     if features is None:
         return features_df
