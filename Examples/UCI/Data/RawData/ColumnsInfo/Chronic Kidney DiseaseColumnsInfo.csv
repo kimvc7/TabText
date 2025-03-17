@@ -1,0 +1,25 @@
+name,attribute,verb,neg_verb,data_type
+age,age ,is,is not,numerical
+bp,bp blood pressure,is,is not,numerical
+sg,sg specific gravity,is,is not,numerical
+al,al albumin,is,is not,numerical
+su,su sugar,is,is not,numerical
+rbc,rbc red blood cells,is,is not,categorical
+pc,pc pus cell,is,is not,categorical
+pcc,pcc pus cell clumps,is,is not,categorical
+ba,ba bacteria,is,is not,categorical
+bgr,bgr blood glucose random,is,is not,numerical
+bu,bu blood urea,is,is not,numerical
+sc,sc serum creatinine,is,is not,numerical
+sod,sod sodium,is,is not,numerical
+pot,pot potassium,is,is not,numerical
+hemo,hemo hemoglobin,is,is not,numerical
+pcv,pcv packed cell volume,is,is not,numerical
+wbcc,wbcc white blood cell count,is,is not,numerical
+rbcc,rbcc red blood cell count,is,is not,numerical
+htn,htn hypertension,is,is not,categorical
+dm,dm diabetes mellitus,is,is not,categorical
+cad,cad coronary artery disease,is,is not,categorical
+appet,appet appetite,is,is not,categorical
+pe,pe pedal edema,is,is not,categorical
+ane,ane anemia,is,is not,categorical

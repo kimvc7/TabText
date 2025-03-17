@@ -1,0 +1,2 @@
+,path,metadata,name,time_col,columns_file
+0,Thoracic Surgery Data.csv,"The data is dedicated to classification problem related to the post-operative life expectancy in the lung cancer patients: class 1 - death within one year after surgery, class 2 - survival.",Thoracic Surgery Data,,Thoracic Surgery DataColumnsInfo.csv

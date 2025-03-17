@@ -1,0 +1,18 @@
+name,attribute,verb,neg_verb,data_type
+Drug,Drug type of drug D-penicillamine or placebo,is,is not,categorical
+Age,Age age in days,is,is not,numerical
+Sex,Sex M (male) or F (female),is,is not,categorical
+Ascites,Ascites presence of ascites N (No) or Y (Yes),is,is not,categorical
+Hepatomegaly,Hepatomegaly presence of hepatomegaly N (No) or Y (Yes),is,is not,categorical
+Spiders,Spiders presence of spiders N (No) or Y (Yes),is,is not,categorical
+Edema,"Edema presence of edema N (no edema and no diuretic therapy for edema), S (edema present without diuretics, or edema resolved by diuretics), or Y (edema despite diuretic therapy)",is,is not,categorical
+Bilirubin,Bilirubin serum bilirubin,is,is not,numerical
+Cholesterol,Cholesterol serum cholesterol,is,is not,numerical
+Albumin,Albumin albumin,is,is not,numerical
+Copper,Copper urine copper,is,is not,numerical
+Alk_Phos,Alk_Phos alkaline phosphatase,is,is not,numerical
+SGOT,SGOT SGOT,is,is not,numerical
+Tryglicerides,Tryglicerides tryglicerides,is,is not,numerical
+Platelets,Platelets platelets per cubic,is,is not,numerical
+Prothrombin,Prothrombin prothrombin time,is,is not,numerical
+Stage,"Stage histologic stage of disease (1, 2, 3, or 4)",is,is not,categorical

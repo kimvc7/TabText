@@ -1,0 +1,2 @@
+,path,metadata,name,time_col,columns_file
+0,Cirrhosis Patient Survival Prediction.csv,"Utilize 17 clinical features for predicting survival state of patients with liver cirrhosis. The survival states include 0 = D (death), 1 = C (censored), 2 = CL (censored due to liver transplantation).",Cirrhosis Patient Survival Prediction,,Cirrhosis Patient Survival PredictionColumnsInfo.csv

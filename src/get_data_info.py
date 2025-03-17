@@ -10,14 +10,16 @@ import pathlib
 with open(os.path.dirname(__file__) + '/../config.json') as config_file:
         config = json.load(config_file)
 
-DIR_NAME = config["DIRECTORY_NAME"]
 ATTRIBUTES_PATH = config["ATTRIBUTES_PATH"]
+IMPUTERS_PATH = config["IMPUTERS_PATH"]
+MODEL_INFO_PATH = config["MODEL_INFO_PATH"]
 ATTRIBUTES_PATH = config["ATTRIBUTES_PATH"]
 IMPUTERS_PATH = config["IMPUTERS_PATH"]
 
-sys.path.insert(0, DIR_NAME + 'TabText/src/utils')
+sys.path.insert(0, './../../src/utils')
 
 import dill as pickle
+
 from data_utils import *
 
 class Attribute(object):
@@ -30,7 +32,7 @@ class Attribute(object):
         col_type: The type of the column: binary, categorical or numerical.
         avg: The average of the values observed for this column (to be computed usign Training set)
         sd: The standard deviation of the values observed for this column (to be computed usign Training set)
-        column_encoder: The function used to encode categorical values of this column.
+        col_encoder: The function used to encode categorical values of this column.
     """
     def __init__(self, attribute, verb, neg_verb, col_type, avg, sd, col_encoder):
         self.attribute = attribute
@@ -43,48 +45,58 @@ class Attribute(object):
             self.column_encoder = encode_numerical
         else:
             self.column_encoder = lambda x: encode_categorical(x, col_encoder)
-       
-        
+
+
 class AttributesInfo(object):
     """
     Module whose attributes are Attribute objects for each column in a specific tabular data structure.
     
         df: Dataframe with the tabular data
         info_file_path: String with the path to the file with the column information for each relevant column in df
+        col_num: If not None, indicates a unique column to be included in the text
         create_encoder_fn: Function to be used for encoding values of categorical columns 
     """
-    def __init__(self, df, info_file_path, create_encoder_fn=get_label_encoder):
+    def __init__(self, df, info_file_path, col_num, create_encoder_fn=get_label_encoder):
         self.info_file = pd.read_csv(info_file_path, keep_default_na=False, na_values=[''])
-        self.create_attributes(df, create_encoder_fn)
-        self.names = self.find_attribute_names()
+        self.create_attributes(df, create_encoder_fn, col_num)
+        self.names = self.find_attribute_names(df, col_num)
 
-    def find_attribute_names(self):
+    def find_attribute_names(self, df, col_num):
         names = []
-        for i in range(self.info_file.shape[0]):
-            col_name, attribute, verb, neg_verb, col_type = self.info_file.iloc[i]
+        if (col_num is not None):
+            col_name, attribute, verb, neg_verb, col_type = self.info_file.iloc[col_num]
             names.append(col_name)
+        else:
+            for i in range(self.info_file.shape[0]):
+                col_name, attribute, verb, neg_verb, col_type = self.info_file.iloc[i]
+                if (col_name in df.columns):
+                    names.append(col_name)
         return names
 
-
-    def create_attributes(self, df, create_encoder_fn):
-        
-        for i in range(self.info_file.shape[0]):
+    def create_attributes(self, df, create_encoder_fn, col_num):
+        col_range = range(self.info_file.shape[0])
+        if col_num is not None:
+            col_range = [col_num]
+            
+        for i in col_range:
             col_name, attribute, verb, neg_verb, col_type = self.info_file.iloc[i]
-            sd, avg = None, None
+            
+            if col_name in df.columns:
+                sd, avg = None, None
 
-            if col_type != "numerical":
-                col_values = df[[col_name]].astype(str)
-                col_values = col_values[col_name][pd.notnull(col_values[col_name])]
-                col_encoder = create_encoder_fn(col_values)
+                if col_type != "numerical":
+                    col_values = df[[col_name]].astype(str)
+                    col_values = col_values[col_name][pd.notnull(col_values[col_name])]
+                    col_encoder = create_encoder_fn(col_values)
 
-            if col_type == "numerical":
-                col_values = df[[col_name]].astype(np.float)
-                col_values = col_values[col_name][pd.notnull(col_values[col_name])]
-                avg = col_values.mean()
-                sd = col_values.std()
-                col_encoder = None
-                
-            setattr(self, col_name, Attribute(attribute, verb, neg_verb, col_type, avg, sd, col_encoder))
+                if col_type == "numerical":
+                    col_values = df[[col_name]].astype(float)
+                    col_values = col_values[col_name][pd.notnull(col_values[col_name])]
+                    avg = col_values.mean()
+                    sd = col_values.std()
+                    col_encoder = None
+
+                setattr(self, col_name, Attribute(attribute, verb, neg_verb, col_type, avg, sd, col_encoder))
 
 class TableInfo(object):
     """
@@ -117,7 +129,11 @@ def encode_table_df(table_df, attributes_info):
     cols_to_encode = attributes_info.names
     
     for col in cols_to_encode:
-        col_values = table_df[col]
+        col_type = getattr(attributes_info, col).column_type
+        if col_type != "numerical":
+            col_values = table_df[col].astype(str)
+        if col_type == "numerical":
+            col_values = table_df[col].astype(float)
         col_encoder = getattr(attributes_info, col).column_encoder
         labels = col_encoder(col_values[col_values.notnull()])
         encoded_df[col] = pd.Series(labels, index=col_values[col_values.notnull()].index)
@@ -151,18 +167,18 @@ def get_filtered_ids(admission_df, discharge_df, id_col, time_col, location_col,
     if end is not None:
         discharge_df = discharge_df[discharge_df["DISCHARGE_DATE"].dt.date < end]
         
-    los_df = discharge_df.merge(admission_df, on=["PAT_ENC_CSN_ID"], how="inner")
+    los_df = discharge_df.merge(admission_df, on=[id_col], how="inner")
     los_df["LOS"] = los_df["DISCHARGE_DATE"] - los_df["ADMISSION_DATE"]
 
     #Filter only to inpatients that stay in hospital for at least two different dates
     los_df = los_df[los_df["LOS"]>= datetime.timedelta(days=1)]
-    filtered_ids = set(los_df["PAT_ENC_CSN_ID"].unique()) 
+    filtered_ids = set(los_df[id_col].unique()) 
 
     return list(filtered_ids)
-    
 
 
-def save_model_info(paths, id_col, time_col, imputer, pat_ids):
+
+def save_model_info(paths, id_col, time_col, imputer, training_ids, testing_ids, col_num=None, model_name=""):
     """
     Saves the AttributedInfo object and the imputer function for each table, as well as as the global imputer for imputating
     merged tables.
@@ -170,14 +186,20 @@ def save_model_info(paths, id_col, time_col, imputer, pat_ids):
     Parameters::
         paths = list of four paths [example_path, data_path, tables_path, columns_path]
             example_path: Path to the folder for the specific application.
-            data_path: Path to the folder withall the data.
+            data_path: Path to the folder with all the data.
             tables_path: Path to the csv file with the information about each table (relative to data_path)
             columns_path: Path to the folder with the csv files containing information for the columns in each table.
         id_col: Name of the column containing the patient ids
         time_col: Name of the column containing the timestamps
         imputer: String indicating the type of imputer to use; one of "zero_imp" or "iai_imp".
-        pat_ids: List of patient ids whose data will be used to save the model information (training data)
+        training_ids: List of ids whose data will be used to save the model information (training data)
+        testing_ids: List of ids whose data will be used to evaluate the model (testing data)
+        col_num: If not None, indicates a unique column to be included in the text
+        model_name: The name of the folder in which the information will be saved
     """
+    attributes_path = MODEL_INFO_PATH + "_" + model_name + "/" + ATTRIBUTES_PATH
+    imputers_path = MODEL_INFO_PATH + "_" + model_name + "/" + IMPUTERS_PATH
+    ids_path = MODEL_INFO_PATH + "_" + model_name + "/"
     example_path, data_path, tables_path, columns_path = paths
     
     merged_df = pd.DataFrame(columns = [id_col])
@@ -189,22 +211,29 @@ def save_model_info(paths, id_col, time_col, imputer, pat_ids):
         table_name =  info_df.iloc[i]["name"]
         table_df = pd.read_csv(data_path + info_df.iloc[i]["path"])
         
-        table_df = table_df[table_df[id_col].isin(pat_ids)]
+        if training_ids is not None:
+            table_df = table_df[table_df[id_col].isin(training_ids)]
+            
         table_time_col = info_df.iloc[i]["time_col"]
         is_static = info_df["time_col"].isnull().iloc[i]
         base_cols = [id_col]  
         
         if not is_static:
-            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True)
+            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True).dt.date
             base_cols += [time_col]
         
         columns_file = info_df.iloc[i]["columns_file"]
-        attributes_info = AttributesInfo(table_df, data_path + columns_path + columns_file)
+        attributes_info = AttributesInfo(table_df, data_path + columns_path + columns_file, col_num)
         
-        if not os.path.exists(example_path + ATTRIBUTES_PATH):
-            os.makedirs(example_path + ATTRIBUTES_PATH)
-        with open(example_path + ATTRIBUTES_PATH + "/" + table_name + ".pkl", 'wb') as files:
-            pickle.dump(attributes_info, files)
+        if not os.path.exists(example_path + attributes_path):
+            os.makedirs(example_path + attributes_path)
+        
+        if col_num is not None:
+            with open(example_path + attributes_path + "/" + table_name + str(col_num) + ".pkl", 'wb') as files:
+                pickle.dump(attributes_info, files)
+        else:
+            with open(example_path + attributes_path + "/" + table_name + ".pkl", 'wb') as files:
+                pickle.dump(attributes_info, files)
 
         table_cols = attributes_info.names
         merged_cols += table_cols
@@ -227,9 +256,9 @@ def save_model_info(paths, id_col, time_col, imputer, pat_ids):
             table_imp = get_iai_imputer(table_encoded_df[table_cols])
             table_imputer = lambda x: iai_impute_data(x, table_imp)
         
-        if not os.path.exists(example_path + IMPUTERS_PATH +"_" + imputer):
-            os.makedirs(example_path + IMPUTERS_PATH +"_" + imputer)
-        with open(example_path + IMPUTERS_PATH + "_" + imputer + "/" + table_name + ".pkl", 'wb') as files:
+        if not os.path.exists(example_path + imputers_path +"_" + imputer):
+            os.makedirs(example_path + imputers_path +"_" + imputer)
+        with open(example_path + imputers_path + "_" + imputer + "/" + table_name + ".pkl", 'wb') as files:
             pickle.dump(table_imputer, files)
 
     if imputer == "zero_imp":
@@ -238,12 +267,18 @@ def save_model_info(paths, id_col, time_col, imputer, pat_ids):
         imp = get_iai_imputer(merged_df[merged_cols])
         global_imputer = lambda x: iai_impute_data(x, imp)
     
-    with open(example_path + IMPUTERS_PATH + "_" + imputer + "/global_imputer.pkl", 'wb') as files:
+    with open(example_path + imputers_path + "_" + imputer + "/global_imputer.pkl", 'wb') as files:
         pickle.dump(global_imputer, files)
+        
+    with open(example_path + ids_path  + "/training_ids.pkl", 'wb') as files:
+        pickle.dump(training_ids, files)
+        
+    with open(example_path + ids_path + "/testing_ids.pkl", 'wb') as files:
+        pickle.dump(testing_ids, files)
 
 
 
-def get_model_info(paths, id_col, time_col, imputer, pat_ids):
+def get_model_info(paths, id_col, time_col, imputer, data_subset, col_num=None, model_name=""):
     """
     Loads the AttributedInfo object, the imputer function for each table, as well as as the global imputer for imputating
     merged tables.
@@ -254,12 +289,18 @@ def get_model_info(paths, id_col, time_col, imputer, pat_ids):
             data_path: Path to the folder withall the data.
             tables_path: Path to the csv file with the information about each table (relative to data_path)
             columns_path: Path to the folder with the csv files containing information for the columns in each table.
-        id_col: Name of the column containing the patient ids
-        time_col: Name of the column containing the timestamps
+        id_col: Name of the column containing the patient ids.
+        time_col: Name of the column containing the timestamps.
         imputer: String indicating the type of imputer to use; one of "zero_imp" or "iai_imp".
-        pat_ids: List of patient ids whose data will be used to save the model information (training data)
+        data_subset: Training or Testing.
+        col_num: If not None, indicates a unique column to be included in the text
+        model_name: The name of the folder in which the information will be saved
     """
+    attributes_path = MODEL_INFO_PATH + "_" + model_name + "/" + ATTRIBUTES_PATH
+    imputers_path = MODEL_INFO_PATH + "_" + model_name + "/" + IMPUTERS_PATH
     example_path, data_path, tables_path, columns_path = paths
+    ids_path = MODEL_INFO_PATH + "_" + model_name + "/"
+    subject_ids = pd.read_pickle(example_path + ids_path + str(data_subset).lower() + "_ids.pkl")
     
     tables_info = []
     info_df = pd.read_csv(data_path + tables_path)
@@ -270,21 +311,26 @@ def get_model_info(paths, id_col, time_col, imputer, pat_ids):
         metadata = info_df.iloc[i]["metadata"]
         table_df = pd.read_csv(data_path + info_df.iloc[i]["path"])
 
-        table_df = table_df[table_df[id_col].isin(pat_ids)]
+        if subject_ids is not None:
+            table_df = table_df[table_df[id_col].isin(subject_ids)]
         table_time_col = info_df.iloc[i]["time_col"]
         is_static = info_df["time_col"].isnull().iloc[i]
         base_cols = [id_col]
         
         if not is_static:
-            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True)
+            table_df[time_col] = pd.to_datetime(table_df[table_time_col], infer_datetime_format=True).dt.date
             base_cols += [time_col]
         
-        attributes_info = pd.read_pickle(example_path + ATTRIBUTES_PATH + "/" + name + ".pkl")    
-        table_imputer = pd.read_pickle(example_path + IMPUTERS_PATH + "_" + imputer + "/" + name + ".pkl")
+        if col_num is not None:
+            attributes_info = pd.read_pickle(example_path + attributes_path + "/" + name + str(col_num)+ ".pkl")    
+        else:
+            attributes_info = pd.read_pickle(example_path + attributes_path + "/" + name + ".pkl")    
+            
+        table_imputer = pd.read_pickle(example_path + imputers_path + "_" + imputer + "/" + name + ".pkl")
         table_cols = attributes_info.names
         df = table_df[base_cols + table_cols]
         info = TableInfo(name, metadata, table_imputer, df, attributes_info)
         tables_info.append(info)
         
-    global_imputer = pd.read_pickle(example_path + IMPUTERS_PATH + "_" + imputer + "/global_imputer.pkl")
-    return tables_info, global_imputer
+    global_imputer = pd.read_pickle(example_path + imputers_path + "_" + imputer + "/global_imputer.pkl")
+    return tables_info, global_imputer, subject_ids

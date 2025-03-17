@@ -1,0 +1,5 @@
+name,attribute,verb,neg_verb,data_type
+Recency,Recency months since last donation,is,is not,numerical
+Frequency,Frequency total number of donations,is,is not,numerical
+Monetary,Monetary total blood donated in c.c.,is,is not,numerical
+Time,Time months since first donation,is,is not,numerical

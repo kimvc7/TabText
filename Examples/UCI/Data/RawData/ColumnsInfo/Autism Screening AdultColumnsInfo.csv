@@ -1,0 +1,9 @@
+name,attribute,verb,neg_verb,data_type
+age,age ,is,is not,numerical
+gender,gender ,is,is not,categorical
+ethnicity,ethnicity ,is,is not,categorical
+jaundice, born with jaundice ,is,is not,categorical
+family_pdd,family member has a PDD ,is,is not,categorical
+country_of_res, country of residence ,is,is not,categorical
+used_app_before,used app before ,is,is not,categorical
+relation,relation ,is,is not,categorical

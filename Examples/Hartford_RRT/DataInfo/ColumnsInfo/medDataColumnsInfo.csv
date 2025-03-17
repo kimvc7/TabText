@@ -1,5 +1,0 @@
-column_name,attribute,verb,neg_verb,data_type
-MED_NAME,Medication name,is,,categorical
-DESCRIPTION,Description of the medication,is,,categorical
-DOSE_UNIT,The unit of the medication ,is,,categorical
-DOSE,Dosage,is,,numerical

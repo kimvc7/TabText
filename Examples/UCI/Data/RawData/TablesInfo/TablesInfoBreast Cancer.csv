@@ -1,0 +1,2 @@
+,path,metadata,name,time_col,columns_file
+0,Breast Cancer.csv,"This breast cancer domain was obtained from the University Medical Centre, Institute of Oncology, Ljubljana, Yugoslavia. This is one of three domains provided by the Oncology Institute that has repeatedly appeared in the machine learning literature. (See also lymphography and primary-tumor.)",Breast Cancer,,Breast CancerColumnsInfo.csv

@@ -11,11 +11,9 @@ import os
 with open(os.path.dirname(__file__) + '/../../config.json') as config_file:
         config = json.load(config_file)
 
-DIR_NAME = config["DIRECTORY_NAME"]
-
-sys.path.insert(0, DIR_NAME + 'TabText/src/utils')
+sys.path.insert(0, './../../../src/utils')
 from patient_utils import *
-from biobert_utils import *
+from llm_utils import *
 from data_utils import *
 
 class Patient(object):
@@ -54,33 +52,40 @@ class Patient(object):
             joint_tables: Boolean indicating weather or not to impute numbers and embed text after merging the table objects.
             
         """
+        #Text
         for table in self.tables:
             table.create_encoded_imputed_vectors()
             table.create_text(prefix, missing, replace_nums, descriptive, meta)
-
         reversed_tables = list(reversed(self.tables))
         text_table = reduce(lambda t1, t2: merge_text(t1, t2, self.time_col), reversed_tables)
-        
+
         if self.time_col is not None:
             self.text = text_table.text.sort_values(by=[self.time_col])
         else:
             self.text = text_table.text
             
-        enc_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "encodings"), reversed_tables)
+        if "text_per_col" in feature_types:
+            assert(len(self.tables)==1)
+    
+            if self.time_col is not None:
+                self.text_per_col = self.tables[0].text_per_col.sort_values(by=[self.time_col])
+            else:
+                self.text_per_col = self.tables[0].text_per_col
         
+
+        #Encodings
+        enc_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "encodings"), reversed_tables)
         if self.time_col is not None:
             self.encodings = enc_table.encodings.sort_values(by=[self.time_col])
             
 
         if "joint_embeddings" in feature_types:
-            
             if self.time_col is not None:
                 self.joint_embeddings = create_embeddings(self.text).sort_values(by=[self.time_col])
             else:
                 self.joint_embeddings = create_embeddings(self.text)
             
         if "joint_imputations" in feature_types:
-            
             if self.time_col is not None:
                 joint_imputations = global_imp(self.encodings.drop([self.time_col], axis = 1))
                 joint_imputations[self.time_col] = self.encodings[self.time_col]
@@ -89,22 +94,18 @@ class Patient(object):
                 joint_imputations = global_imp(self.encodings)
                 
         if "sep_embeddings" in feature_types:
-            
             for table in self.tables:
                 table.create_embeddings()
-                    
             emb_table= reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "embeddings"), reversed_tables)
-            
             if self.time_col is not None:
                 self.sep_embeddings = emb_table.embeddings.sort_values(by=[self.time_col])
             else:
                 self.sep_embeddings = emb_table.embeddings
             
         if "sep_imputations" in feature_types:
-  
             imp_table = reduce(lambda t1, t2: merge_tables(t1, t2, self.time_col, "imputations"), reversed_tables)
-    
             if self.time_col is not None:
                 self.sep_imputations = imp_table.imputations.sort_values(by=[self.time_col])
             else:
                 self.sep_imputations = imp_table.imputations
+

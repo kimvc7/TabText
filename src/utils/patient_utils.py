@@ -46,8 +46,6 @@ def merge_text(table1, table2, time_col):
 
     return table
 
-
-
 def merge_tables(table1, table2, time_col, table_attribute):
     """
     Parameters::
@@ -67,7 +65,6 @@ def merge_tables(table1, table2, time_col, table_attribute):
     
     df1 = getattr(table2, table_attribute).copy()
     df2 = getattr(table1, table_attribute).copy()
-
 
     if table1.is_static() and table2.is_static():
         merged_df = pd.concat([df1.reset_index(drop=True),df2.reset_index(drop=True)], axis=1)

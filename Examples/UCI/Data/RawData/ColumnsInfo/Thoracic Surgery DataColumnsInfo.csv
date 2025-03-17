@@ -1,0 +1,17 @@
+name,attribute,verb,neg_verb,data_type
+DGN,DGN Diagnosis - specific combination of ICD-10 codes for primary and secondary as well multiple tumours if any,is,is not,categorical
+PRE4,PRE4 Forced vital capacity - FVC (numeric),is,is not,numerical
+PRE5,PRE5 Volume that has been exhaled at the end of the first second of forced expiration - FEV1 (numeric),is,is not,numerical
+PRE6,"PRE6 Performance status - Zubrod scale (PRZ2,PRZ1,PRZ0)",is,is not,categorical
+PRE7,"PRE7 Pain before surgery (T,F)",is,is not,categorical
+PRE8,"PRE8 Haemoptysis before surgery (T,F)",is,is not,categorical
+PRE9,"PRE9 Dyspnoea before surgery (T,F)",is,is not,categorical
+PRE10,"PRE10 Cough before surgery (T,F)",is,is not,categorical
+PRE11,"PRE11 Weakness before surgery (T,F)",is,is not,categorical
+PRE14,"PRE14 T in clinical TNM - size of the original tumour, from OC11 (smallest) to OC14 (largest) (OC11,OC14,OC12,OC13)",is,is not,categorical
+PRE17,"PRE17 Type 2 DM - diabetes mellitus (T,F)",is,is not,categorical
+PRE19,"PRE19 MI up to 6 months (T,F)",is,is not,categorical
+PRE25,"PRE25 PAD - peripheral arterial diseases (T,F)",is,is not,categorical
+PRE30,"PRE30 Smoking (T,F)",is,is not,categorical
+PRE32,"PRE32 Asthma (T,F)",is,is not,categorical
+AGE,AGE Age at surgery (numeric),is,is not,numerical

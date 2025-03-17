@@ -10,8 +10,7 @@ import os
 with open(os.path.dirname(__file__) + '/../config.json') as config_file:
         config = json.load(config_file)
 
-DIR_NAME = config["DIRECTORY_NAME"]
-sys.path.insert(0, DIR_NAME + 'TabText/src/utils')
+sys.path.insert(0, './../../src/utils')
 
 from data_utils import *
 
@@ -26,7 +25,8 @@ def get_timebounded_data(timed_data, time_col, start = None, end = None):
 
     return timebounded_df
 
-def get_features(ids, time_col, id_col, patients_path, feature_type, disch_info, weight_fn = hourly_weight_fn ):
+
+def get_features(ids, time_col, id_col, patients_path, feature_type, disch_info, weight_fn = hourly_weight_fn):
     """
     Parameters::
         ids: List of ids of patients whose features will be created.
@@ -45,19 +45,26 @@ def get_features(ids, time_col, id_col, patients_path, feature_type, disch_info,
         information from t_1 to t_i. Data from different timetamps is averaged using the weights returned by weight_fn.
     """
     features = None
-
+    count = 0
     for pat_id in ids:
+        
         try:
             timed_data = pd.read_pickle(patients_path + str(pat_id) + ".pkl")
-            timed_data = timed_data.fillna(0)
-            timed_data[time_col] = timed_data[time_col].dt.to_pydatetime()
-            discharge_info_pat = disch_info[disch_info[id_col] == pat_id]
-            if discharge_info_pat.shape[0] > 0:
-                discharge_date = discharge_info_pat[time_col].dt.date.values[0]
-                timebounded_df = get_timebounded_data(timed_data, time_col, end=discharge_date)
-                features = add_patient_features(features, pat_id, timebounded_df, id_col, time_col, weight_fn)
-        except:
-            print(pat_id)
+            
+            if (time_col is not None):
+                timed_data[time_col] = pd.to_datetime(timed_data[time_col], infer_datetime_format=True).dt.to_pydatetime()
+                
+            if (time_col is not None) and (disch_info is not None):
+                discharge_info_pat = disch_info[disch_info[id_col] == pat_id]
+                if discharge_info_pat.shape[0] > 0:
+                    discharge_date = discharge_info_pat[time_col].dt.date.values[0]
+                    timebounded_df = get_timebounded_data(timed_data, time_col, end=discharge_date)
+                    features = add_patient_features(features, pat_id, timebounded_df, id_col, time_col, weight_fn)
+            else:
+                features = add_patient_features(features, pat_id, timed_data, id_col, time_col, weight_fn)
+        
+        except Exception as e:
+            print(e)
     return features
 
 def add_patient_features(features, pat_id, timebounded_df, id_col, time_col, weight_fn, time_series=False):
@@ -89,13 +96,14 @@ def add_patient_features(features, pat_id, timebounded_df, id_col, time_col, wei
         return features_df
     else:
         return pd.concat([features, features_df])
-    
-def get_and_save_features(ids, time_col, id_col, feature_type, disch_info, pat_set, path, sentence_name, job_id="", weight_fn = hourly_weight_fn):
-    patient_path = path + pat_set + "/" + feature_type + "/" + sentence_name + "/Patients/"
-    features = get_features(ids, time_col, id_col, patient_path, feature_type, disch_info, weight_fn = hourly_weight_fn)
-    
-    dir_name = path + pat_set + "/" + feature_type + "/" + sentence_name + "/Features"
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
-    
-    features.to_csv(dir_name + "/" + job_id + ".csv")
+
+def get_and_save_features(ids, time_col, id_col, feature_types, disch_info, pat_set, path, sentence_name, job_id="", weight_fn = hourly_weight_fn):
+    for feature_type in feature_types:
+        patient_path = path + pat_set + "/" + feature_type + "/" + sentence_name + "/Patients/"
+        features = get_features(ids, time_col, id_col, patient_path, feature_type, disch_info, weight_fn = hourly_weight_fn)
+
+        dir_name = path + pat_set + "/" + feature_type + "/" + sentence_name + "/Features"
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+
+        features.to_csv(dir_name + "/" + job_id + ".csv")

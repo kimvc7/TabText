@@ -2,15 +2,15 @@ from Column import *
 import json
 import sys
 import os
+import datetime as dt
 
 # Load config file with static parameters
 with open(os.path.dirname(__file__) + '/../../config.json') as config_file:
         config = json.load(config_file)
 
-DIR_NAME = config["DIRECTORY_NAME"]
 
-sys.path.insert(0, DIR_NAME + 'TabText/src/utils')
-from biobert_utils import *
+sys.path.insert(0, '/../../src/utils')
+from llm_utils import *
 
 
 class Table(object):
@@ -25,11 +25,15 @@ class Table(object):
     imputer: Function used to impute the missing values in df. 
     
     """
-    def __init__(self, name="", df=pd.DataFrame(), columns=None, metadata=None, time_col=None, imputer=None):
+    def __init__(self, name="", df=pd.DataFrame(), columns=None, metadata=None, time_col=None, imputer=None, clinical=True, long=True, biogpt=False, finetuned_path="" ):
         self.name = name
         self.columns = columns
         self.metadata = metadata
         self.time_col = time_col
+        self.clinical = clinical
+        self.long = long
+        self.biogpt = biogpt
+        self.finetuned_path = finetuned_path
         self.df = df
         self.imputer = imputer
         self.is_empty = pd.isna(df).all().all()
@@ -40,7 +44,6 @@ class Table(object):
     def is_static(self):
         return self.time_col is None      
     
-        
     def create_encoded_imputed_vectors(self):
         """
         Creates encoded and imputed versions of the table contents.
@@ -61,10 +64,9 @@ class Table(object):
        
         self.encodings = encoded_df
         if self.is_temporal():
-            self.encodings[self.time_col] = list(self.df[self.time_col])
-        
+            self.encodings[self.time_col] = list(self.df[self.time_col]) 
 
-    def create_text(self, prefix, missing_word, replace_numbers, descriptive, meta, omit_empty = False, sep = "</s>"):
+    def create_text(self, prefix, missing_word, replace_numbers, descriptive, meta, omit_empty = True, sep = "</s>"):
         """
         Creates a timestamped dataframe; each row contains a String (paragraph) with all the tabular information for the
         corresponding timestamp.
@@ -79,9 +81,14 @@ class Table(object):
             sep: String indicating what symbol to use at the end of the paragraph as a separator between tables.
         """
         self.text = pd.DataFrame()
+        self.text_per_col = pd.DataFrame()
+        
         if self.is_temporal():
             self.text[self.time_col] = self.df[self.time_col]
+            self.text_per_col[self.time_col] = self.df[self.time_col]
+        
         text = []
+        text_per_col = {column.name:[] for column in self.columns}
         
         if self.is_empty & omit_empty:
             text.append("")
@@ -91,11 +98,13 @@ class Table(object):
                 text_i = ""
                 if meta & (len(str(self.metadata)) >1):
                     text_i = self.metadata
-
                 for column in self.columns:
                     value = self.df.iloc[t_i][column.name]
                     imp_value = self.imputations.iloc[t_i][column.name]
                     col_text = column.create_sentence(value, imp_value, prefix, missing_word, replace_numbers, descriptive)
+                    current_col = text_per_col[column.name]
+                    text_per_col[column.name] = current_col + [col_text]
+                    
                     if len(col_text) >0:
                         col_text += ", "
                     text_i += col_text
@@ -103,6 +112,8 @@ class Table(object):
                 text.append(text_i)
 
         self.text["text"] =  text
+        for column in self.columns:
+            self.text_per_col[column.name] =  text_per_col[column.name]
     
     def create_embeddings(self):
         """
@@ -112,7 +123,7 @@ class Table(object):
 
         for i in range(self.text.shape[0]):
             text = self.text.iloc[i]["text"]
-            full_embedding = get_biobert_embeddings(text)[0]
+            full_embedding = get_llm_embeddings(text=text, long_input=self.long, finetuned_path=self.finetuned_path, clinical=self.clinical, biogpt=self.biogpt)[0]
             embeddings.append(full_embedding.reshape(-1))
         
         emb_df =  pd.DataFrame(np.array(embeddings))
@@ -121,4 +132,5 @@ class Table(object):
         merged_df = merged_df.rename({i: self.name + "_" + str(i) for i in range(len(embeddings[0]))}, axis='columns')
 
         self.embeddings = merged_df.drop(["text"], axis = 1)
+
         

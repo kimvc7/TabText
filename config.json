@@ -1,13 +1,12 @@
 {
   "_comment": "===== CONSTAT FILE PATHS =====",
-  "DIRECTORY_NAME": "/home/gridsan/kimvc/HAIM_H2O_shared/",
-  "BIOBERT_PATH":  "/home/gridsan/kimvc/haim_shared/pretrained_bert_tf/biobert_pretrain_output_all_notes_150000/",
-  "LONG_BIOBERT_PATH": "/home/gridsan/kimvc/DB_research_BST_shared/models/",
-  "PATIENTS_PATH": "TrainingPatients/,,False,True/",
-  "ATTRIBUTES_PATH": "ModelInfo/AttributesInfo",
-  "IMPUTERS_PATH": "ModelInfo/Imputers",
+  "CLINICAL_LONGFORMER_PATH": "./../../LLMs/ClinicalLongformer/",
+  "LONGFORMER_PATH": "./../../LLMs/Longformer/",
+  "BIOGPT_PATH": "./../../LLMs/BioGPT/",
+  "MODEL_INFO_PATH": "ModelInfo",
+  "ATTRIBUTES_PATH": "AttributesInfo",
+  "IMPUTERS_PATH": "Imputers",
 
   "_comment": "===== CONSTANT COLUMN KEYS =====",
-  "TEXT_COL": "text",
-  "NUM_EMB":768
+  "TEXT_COL": "text"
 }

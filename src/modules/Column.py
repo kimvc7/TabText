@@ -47,8 +47,8 @@ class Column(object):
             return self.create_descriptive_sentence(value, imp_value, prefix, missing_word, replace_numbers)
         else:
             return self.create_basic_sentence(value, imp_value, prefix, missing_word, replace_numbers)
-        
-        
+
+
 class Binary_Column(Column):
     """
     Binary Column submodule for columns with values in [1, 0, true, false, "1", "0", "true", "false"]
@@ -64,7 +64,7 @@ class Binary_Column(Column):
 
     def create_descriptive_sentence(self, value, imp_value, prefix, missing_word, replace_numbers):
         sentence = ""
-        if str(value).lower()  in ["1", "0", "true", "false"]:
+        if str(value).lower()  in ["1", "0", "true", "false", "0.0", "1.0"]:
             if int(value) == 1:
                 sentence = prefix + self.verb + " " + self.attribute
             elif int(value) == 0:
@@ -74,7 +74,7 @@ class Binary_Column(Column):
 
     def create_basic_sentence(self, value, imp_value, prefix, missing_word, replace_numbers):
         sentence = ""
-        if str(value).lower()  in ["1", "0", "true", "false"]:
+        if str(value).lower()  in ["1", "0", "true", "false", "0.0", "1.0"]:
             if int(value) == 1:
                 sentence = self.verb + " " + self.attribute + ": yes" 
             elif int(value) == 0:
@@ -82,7 +82,7 @@ class Binary_Column(Column):
         elif missing_word != "":
             sentence = self.verb + " " + self.attribute + ": " + missing_word
         return sentence
-        
+
 class Categorical_Column(Column):
     """
     Categorical Column submodule for columns with non-numerical values
@@ -113,7 +113,7 @@ class Categorical_Column(Column):
         elif missing_word == "imp_replace":
             sentence = self.attribute + ": " + str(imp_value)
         return sentence
-    
+
 class Numerical_Column(Column):
     """
     Numerical Column submodule for columns with numerical values
