@@ -21,7 +21,6 @@ with open('configs/config_' + args.data_set+ '.json') as config_file:
 ""
            #Load data and parameters
 ""
-DIR_NAME = UCI_config["TABTEXT_PATH"]
 EXAMPLE_PATH = UCI_config["EXAMPLE_PATH"]
 TABLES_FILE = UCI_config["TABLES_FILE"]
 COLUMNS_PATH = UCI_config["COLUMNS_PATH"]
@@ -32,7 +31,7 @@ split_seed = UCI_config["TARGET_SPLIT_SEED"]
 split_ratio = UCI_config["TEST_SPLIT_RATIO"]
 TIME_COL = None
 
-sys.path.insert(0, DIR_NAME + 'TabText/src')
+sys.path.insert(0, './../../src')
 from get_data_info import *
 from get_patients import *
 from get_features import *

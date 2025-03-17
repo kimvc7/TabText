@@ -96,19 +96,13 @@ if biogpt:
     llm_name = "BioGPT"
 
 
-""
-           #Get relevant patient ids
-""
-##############################################
-# Save patients info for desired feature types
-# #############################################
 folder_name = "Training/" + llm_name + "/" +args.data_set + "/"
-get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, all_ids, prefix, missing, replace, descriptive, meta, global_imputer, folder_name, EXAMPLE_PATH, "RAW_DATA", clinical, long, biogpt, finetuned_path, ["text"])
-
 sent_name = "RAW_DATA_" + str(prefix) +"_"+ str(missing) +"_"+ str(replace) +"_"+ str(descriptive) +"_"+ str(meta)
 
-get_and_save_features(all_ids, TIME_COL, ID_COL, ["text"], None, folder_name, EXAMPLE_PATH, sent_name, job_id=(str(0)))
 
+get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, all_ids, prefix, missing, replace, descriptive, meta, global_imputer, folder_name, EXAMPLE_PATH, "RAW_DATA", clinical, long, biogpt, finetuned_path="", ["text"])
+
+get_and_save_features(all_ids, TIME_COL, ID_COL, ["text"], None, folder_name, EXAMPLE_PATH, sent_name, job_id=(str(0)))
 
 X_text = pd.read_csv(folder_name + "text/" + sent_name + "/Features/0.csv", index_col=0)
 X_train = X_text[[ID_COL, "text"]]

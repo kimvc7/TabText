@@ -11,7 +11,6 @@ from pathlib import Path
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data_set", type=str, default="Wine", help="which uci dataset")
 parser.add_argument("--job_num", type=int, default=0, help='which job to run')
-parser.add_argument("--job_set", type=str, default="Training", help="indicate which set from 'Training' or 'Testing'")
 parser.add_argument("--clinical", action='store_true', help="clinical llm or not")
 parser.add_argument("--long", action='store_true', help='long input or not')
 parser.add_argument("--biogpt", action='store_true', help='biogpt or not')
@@ -51,7 +50,6 @@ from get_features import *
                     
                     
 JOB_NUM = args.job_num
-JOB_SET = args.job_set
 
 DATA_PATH = EXAMPLE_PATH + UCI_config["RAW_DATA_PATH"] 
 paths = [EXAMPLE_PATH, DATA_PATH, TABLES_FILE, COLUMNS_PATH]
@@ -75,19 +73,7 @@ if finetuned:
     finetuned_path = EXAMPLE_PATH + args.data_set + "_finetuned/"
 else:
     finetuned_path = ""
-
-
-
-""
-           #Get relevant patient ids
-""
-tables_info, global_imputer, all_ids = get_model_info(paths, ID_COL, TIME_COL, imputer, JOB_SET, None, model_name=args.data_set)
-JOB_LENGTH = int(len(all_ids)/5)+1
-pats = [all_ids[i] for i in range(JOB_NUM*JOB_LENGTH, min((JOB_NUM+1)*JOB_LENGTH, len(all_ids)))]
-
-##############################################
-# Save patients info for desired feature types
-# #############################################
+    
 feature_types = ["text_per_col", "sep_embeddings", "sep_imputations"]
 llm_name = ""
 
@@ -109,10 +95,17 @@ if biogpt:
     assert(clinical==False)
     assert(finetuned==False)
     llm_name = "BioGPT"
-    
-        
-folder_name = JOB_SET + "/" + llm_name + "/" +args.data_set + "/"
-get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, pats, prefix, missing, replace, descriptive, meta, global_imputer, folder_name, EXAMPLE_PATH, "RAW_DATA", clinical, long, biogpt, finetuned_path, feature_types)
 
-sent_name = "RAW_DATA_" + str(prefix) +"_"+ str(missing) +"_"+ str(replace) +"_"+ str(descriptive) +"_"+ str(meta)
-get_and_save_features(pats, TIME_COL, ID_COL, feature_types, None, folder_name, EXAMPLE_PATH, sent_name,   job_id=(str(JOB_NUM)))
+
+
+""
+           #Get relevant patient ids
+""
+for JOB_SET in ["Training", "Testing"]:
+    tables_info, global_imputer, all_ids = get_model_info(paths, ID_COL, TIME_COL, imputer, JOB_SET, None, model_name=args.data_set)
+
+    folder_name = JOB_SET + "/" + llm_name + "/" +args.data_set + "/"
+    get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, all_ids, prefix, missing, replace, descriptive, meta, global_imputer, folder_name, EXAMPLE_PATH, "RAW_DATA", clinical, long, biogpt, finetuned_path, feature_types)
+
+    sent_name = "RAW_DATA_" + str(prefix) +"_"+ str(missing) +"_"+ str(replace) +"_"+ str(descriptive) +"_"+ str(meta)
+    get_and_save_features(all_ids, TIME_COL, ID_COL, feature_types, None, folder_name, EXAMPLE_PATH, sent_name,   job_id="0")
