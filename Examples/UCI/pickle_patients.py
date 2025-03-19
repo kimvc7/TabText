@@ -81,13 +81,13 @@ if long:
     if clinical:
         if finetuned:
             llm_name = "ClinicalLongformerFinetuned"
-            finetuned_path = data_set + "_finetuned"
+            finetuned_path = args.data_set + "_finetuned"
         else:
             llm_name = "ClinicalLongformer"
     else:
         if finetuned:
             llm_name = "LongformerFinetuned"
-            finetuned_path = data_set + "_finetuned"
+            finetuned_path = args.data_set + "_finetuned"
         else:
             llm_name = "Longformer"
 if biogpt:
@@ -97,15 +97,13 @@ if biogpt:
     llm_name = "BioGPT"
 
 
-
-""
-           #Get relevant patient ids
-""
 for JOB_SET in ["Training", "Testing"]:
     tables_info, global_imputer, all_ids = get_model_info(paths, ID_COL, TIME_COL, imputer, JOB_SET, None, model_name=args.data_set)
+    JOB_LENGTH = int(len(all_ids)/5)+1
+    pats = [all_ids[i] for i in range(JOB_NUM*JOB_LENGTH, min((JOB_NUM+1)*JOB_LENGTH, len(all_ids)))]
 
     folder_name = JOB_SET + "/" + llm_name + "/" +args.data_set + "/"
-    get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, all_ids, prefix, missing, replace, descriptive, meta, global_imputer, folder_name, EXAMPLE_PATH, "RAW_DATA", clinical, long, biogpt, finetuned_path, feature_types)
+    get_and_save_pickle_patients(tables_info, ID_COL, TIME_COL, pats, prefix, missing, replace, descriptive, meta, global_imputer, folder_name, EXAMPLE_PATH, "RAW_DATA", clinical, long, biogpt, finetuned_path, feature_types)
 
     sent_name = "RAW_DATA_" + str(prefix) +"_"+ str(missing) +"_"+ str(replace) +"_"+ str(descriptive) +"_"+ str(meta)
-    get_and_save_features(all_ids, TIME_COL, ID_COL, feature_types, None, folder_name, EXAMPLE_PATH, sent_name,   job_id="0")
+    get_and_save_features(pats, TIME_COL, ID_COL, feature_types, None, folder_name, EXAMPLE_PATH, sent_name,   job_id=str(JOB_NUM))

@@ -51,7 +51,6 @@ with open('configs/config_' +data_set+ '.json') as config_file:
 ""
            #Load data and parameters
 ""
-DIR_NAME = UCI_config["TABTEXT_PATH"]
 EXAMPLE_PATH = UCI_config["EXAMPLE_PATH"]
 TABLES_FILE = UCI_config["TABLES_FILE"]
 COLUMNS_PATH = UCI_config["COLUMNS_PATH"]
@@ -62,7 +61,7 @@ split_seed = UCI_config["TARGET_SPLIT_SEED"]
 split_ratio = UCI_config["TEST_SPLIT_RATIO"]
 TIME_COL = None
 
-sys.path.insert(0, DIR_NAME + 'TabText/src')
+sys.path.insert(0, './../../src')
 from train_models import *
 
 llm_name = ""
@@ -85,13 +84,13 @@ if biogpt:
 
 sent_name = "RAW_DATA_" + str(prefix) +"_"+ str(missing) +"_"+ str(replace) +"_"+ str(descriptive) +"_"+ str(meta)
 
-X_emb_train = load_embeddings("Training/" + llm_name + "/" + data_set + "/sep_embeddings/" + sent_name + "/Features/", start=0)
+X_emb_train = load_embeddings("Training/" + llm_name + "/" + data_set + "/sep_embeddings/" + sent_name + "/Features/", start=0, num_files=1)
 
-X_tab_train = load_embeddings("Training/" + llm_name + "/" + data_set + "/sep_imputations/" + sent_name+"/Features/", start=0)
+X_tab_train = load_embeddings("Training/" + llm_name + "/" + data_set + "/sep_imputations/" + sent_name+"/Features/", start=0, num_files=1)
 
-X_emb_test = load_embeddings("Testing/" + llm_name + "/" + data_set + "/sep_embeddings/" + sent_name + "/Features/", start=0)
+X_emb_test = load_embeddings("Testing/" + llm_name + "/" + data_set + "/sep_embeddings/" + sent_name + "/Features/", start=0, num_files=1)
 
-X_tab_test = load_embeddings("Testing/" + llm_name + "/" + data_set + "/sep_imputations/" + sent_name + "/Features/", start=0)
+X_tab_test = load_embeddings("Testing/" + llm_name + "/" + data_set + "/sep_imputations/" + sent_name + "/Features/", start=0, num_files=1)
 
 targets_df = pd.read_csv(TARGET_FILE)[[ID_COL, TARGET_COL]]
 le = LabelEncoder()
