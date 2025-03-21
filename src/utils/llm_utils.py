@@ -42,21 +42,23 @@ def get_llm_embeddings(text, long_input=True, finetuned_path="", biogpt=False, c
     """
 
     if long_input:
-        if clinical:
-            long_biobert_tokenizer = AutoTokenizer.from_pretrained(clinical_long_path + "tokenizer/")
-            if finetuned_path != "":
-                model = AutoModelForMaskedLM.from_pretrained(finetuned_path, output_hidden_states=True)
-                assert(biogpt == False)
-                assert(long_input == True)
-                assert(clinical == True)
+        if finetuned_path != "":
+            model_path = finetuned_path
+            if clinical:
+                tokenizer_path = clinical_long_path + "tokenizer/"
             else:
-                model = AutoModelForMaskedLM.from_pretrained(clinical_long_path + 'model', output_hidden_states=True)
-            tokens_pt = long_biobert_tokenizer(text, return_tensors="pt", truncation=True)
-        if not clinical:
-            assert(not fine_tuned)
-            longformer_tokenizer = LongformerTokenizer.from_pretrained(longformer_path)
-            model = AutoModelForMaskedLM.from_pretrained(longformer_path, output_hidden_states=True)
-            tokens_pt = longformer_tokenizer(text, return_tensors="pt", truncation=True)
+                tokenizer_path = longformer_path
+        else:
+            if clinical:
+                model_path = clinical_long_path + 'model'
+                tokenizer_path = clinical_long_path + "tokenizer/"
+            else:
+                model_path = longformer_path
+                tokenizer_path = longformer_path
+        
+        model = AutoModelForMaskedLM.from_pretrained(model_path, output_hidden_states=True)
+        llm_tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
+        tokens_pt = llm_tokenizer(text, return_tensors="pt", truncation=True)
     
     if not long_input and not biogpt:
         biobert_tokenizer = AutoTokenizer.from_pretrained(biobert_path)
@@ -108,7 +110,7 @@ def create_embeddings(df):
     return merged_df.drop(columns= "text", axis=1)
 
 
-def fine_tune(X_train, original_llm_path, data_set, batch_size):
+def fine_tune(X_train, original_llm_path, data_set, batch_size, num_epochs=7, clinical=True):
     """
     Parameters::
         X_train: Dataframe with 'id' and 'text' columns for finetuning
@@ -125,9 +127,19 @@ def fine_tune(X_train, original_llm_path, data_set, batch_size):
 
 
     dataset = Dataset.from_pandas(X_train, split='train')
+    
+    model_path = ""
+    tokenizer_path = ""
+    if clinical:
+        model_path = original_llm_path + 'model'
+        tokenizer_path = original_llm_path + "tokenizer/"
+    else:
+        model_path = original_llm_path
+        tokenizer_path = original_llm_path
+        
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = AutoModelForMaskedLM.from_pretrained(original_llm_path + 'model').to(device)
-    tokenizer = AutoTokenizer.from_pretrained(original_llm_path + "tokenizer/")
+    model = AutoModelForMaskedLM.from_pretrained(model_path).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     
     def tokenize_function(batched_data):
         result = tokenizer(batched_data['text'], padding='max_length', truncation=True, max_length=1024)
@@ -159,7 +171,7 @@ def fine_tune(X_train, original_llm_path, data_set, batch_size):
         output_dir= data_set + "_finetuned",
         overwrite_output_dir=False,
         evaluation_strategy="epoch",
-        num_train_epochs=7,
+        num_train_epochs=num_epochs,
         learning_rate=2e-5,
         weight_decay=0.01,
         per_device_train_batch_size=batch_size,

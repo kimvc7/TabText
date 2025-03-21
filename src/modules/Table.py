@@ -51,7 +51,7 @@ class Table(object):
         encoded_df =  pd.DataFrame()
         
         for column in self.columns:
-            col_values = self.df[column.name]
+            col_values = self.df[column.name].astype(str)
             col_encoder = column.encode_fn
             labels = col_encoder(col_values[col_values.notnull()])
             encoded_df[column.name] = col_values
